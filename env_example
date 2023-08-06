@@ -1,0 +1,42 @@
+# docker-compose environment file
+#
+# When you set the same environment variable in multiple files,
+# here’s the priority used by Compose to choose which value to use:
+#
+#  1. Compose file
+#  2. Shell environment variables
+#  3. Environment file
+#  4. Dockerfile
+#  5. Variable is not defined
+
+#
+# Nginx configuration
+#
+NGINX_DEFAULT_CONF=./config/nginx.conf
+
+#
+# OHIF Viewer
+#
+VIEWER_DIST=./viewer-dist
+VIEWER_CONFIG=./config/app-config.js
+
+#
+# Orthanc core with plugins
+#
+ORTHANC_CONFIG=./config/orthanc.json
+ORTHANC_DB_MNT=/Volume/ORTHANC_STORAGE
+# This is location where automation.json files are
+ORTHANC_AUTO=/Volume/AUTO
+
+
+
+#
+# PostgreSQL database - default values should not be used in production
+#
+POSTGRES_DATA_MNT=./pg_data/data
+PGDATA=/var/lib/postgresql/data
+
+POSTGRES_DB=orthanc
+POSTGRES_PORT=5432
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=pgpassword
