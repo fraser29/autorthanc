@@ -55,7 +55,7 @@ services:
       - POSTGRESQL_PLUGIN_ENABLED=true
       - TZ=Europe/Paris
       # NEW - for python
-      - ORTHANC_NAME=ZfMRF_Orthanc
+      - ORTHANC_NAME=MY_Orthanc_Name
       - VERBOSE_ENABLED=true
       - VERBOSE_STARTUP=true
       # - ORTHANC__PYTHON_SCRIPT=/python/UrographyPipeline.py" # Is in orthanc.json

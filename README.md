@@ -40,8 +40,8 @@ A few seconds after deploying the images, the viewer can be accessed at [http://
 
 Orthanc's admin interface can be reached from the navigator at [http://127.0.0.1:81/pacs-admin](http://127.0.0.1:80/pacs-admin), then sign in
 
-- Username: **zfmrf**
-- Password: **zfmrf**
+- Username: **my_username**
+- Password: **my_password**
 
 ## How to shutdown and clean up
 
