@@ -3,7 +3,7 @@
 Docker based infrastructure for OHIF Viewer, Orthanc (with postgres)
 =======
 
-## Updates
+## DEVELOPMENT 
 
 Idea is that have standard osimis orthanc docker.
   have a mounted volume at /var/lib/automation
@@ -21,7 +21,7 @@ A study_stable or series_stable task may do any/all of the  following steps:
 - Anonymise  dicoms
 - ZIP data. 
 
-*NOTE* : package miresearch is designed to work in combination with autorthanc by watching docnload directorys for completed data sets to then perform extra post processing steps, e.g. to initiate processing pipelines. 
+*NOTE* : package [miresearch](https://github.com/fraser29/miresearch) is designed to work in combination with autorthanc by watching docnload directorys for completed data sets to then perform extra post processing steps, e.g. to initiate processing pipelines. 
 
 
 
@@ -62,8 +62,8 @@ rm -rf orthanc_db pg_data
 
 ## Python script action:
 
-- Triggered on SeriesStable
-- Recognises urography if SeriesDescription.endwith('(time)') AND SeriesNumber < 100
-- Writes out series
+- Triggered on SeriesStable and StudyStable 
+- Recognises a series / study based upon rules defined in json script 
+- Performs actions 
   - First to DOWNLOADING directory
   - Once complete copies to QUEUED directory
