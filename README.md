@@ -21,7 +21,7 @@ A study_stable or series_stable task may do any/all of the  following steps:
 - Anonymise  dicoms
 - ZIP data. 
 
-*NOTE* : package [miresearch](https://github.com/fraser29/miresearch) is designed to work in combination with autorthanc by watching docnload directorys for completed data sets to then perform extra post processing steps, e.g. to initiate processing pipelines. 
+*NOTE* : package [miresearch](https://github.com/fraser29/miresearch) is designed to work in combination with autorthanc by watching download directorys for completed data sets to then perform extra post processing steps, e.g. to initiate processing pipelines. 
 
 
 

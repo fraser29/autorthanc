@@ -13,6 +13,7 @@ import json
 import pydicom
 import io
 import shutil
+import logging
 
 # TODO move to config
 SERIES_CONTAINS_STR = ''
@@ -22,6 +23,10 @@ QUEUED = 'QUEUED'
 USERNAME = 1000
 GROUPNAME = 1000
 
+logging.basicConfig(filename=os.path.join(outputDir, 'autorthanc.log'),
+                    level=logging.INFO,
+                    format='%(asctime)s | %(levelname)-7s | %(message)s',
+                    datefmt='%d-%m-%Y %H:%M:%S')
 
 
 def writeDictionaryToJSON(fileName, dictToWrite):
