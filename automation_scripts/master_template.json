@@ -7,7 +7,7 @@
             "ID_JSON": "BrainDNIU.json",
             "CheckOn": "Study",
             "IsActive": true
-        },
+        }
         {
             "ID": "SMILIES",
             "ID_JSON": "SMILIES.json",
