@@ -1,0 +1,24 @@
+{
+    "CheckOn": "Study",
+    "IsActive": true,
+    "RunImmediately": true,    
+    "CheckIfAlreadyDownloaded": false,
+    "Comment": "CHANGEME: enter something sensible and your initials",
+    "Tags": [
+        {
+            "TagName": "PatientName",
+            "Level": "Patient",
+            "Value": "CHANGEME_or_delete_block"
+        },
+        {
+            "TagName": "StudyDescription",
+            "Level": "Study",
+            "Value": "CHANGEME_or_delete_block"
+        },
+        {
+            "TagName": "SeriesDescription",
+            "Level": "Series",
+            "Value": "CHANGEME_or_delete_block"
+        }
+    ]
+}
