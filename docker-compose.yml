@@ -16,8 +16,8 @@ services:
       # Nginx as a reversed proxy for orthanc and the viewer
       - ${NGINX_DEFAULT_CONF}:/etc/nginx/conf.d/default.conf:ro
       # OHIF Viewer configuration to reach DICOMWeb endpoints
-      - ${VIEWER_DIST}:/usr/share/nginx/html/:ro
       - ${VIEWER_CONFIG}:/usr/share/nginx/html/app-config.js:ro
+      - ${VIEWER_DIST}:/usr/share/nginx/html/:ro
     environment:
       - TZ=Europe/Paris
     logging:
@@ -43,8 +43,8 @@ services:
       # storage volume for raw dicoms
       - ${ORTHANC_DB_MNT}:/var/lib/orthanc/db
       # For Automation
-      - ${ORTHANC_AUTO}:/auto_scripts
-      - ${AUTOMATION_DATA_STORAGE}:/output
+      - ${ORTHANC_AUTO_SCRIPTS}:/auto_scripts
+      - ${ORTHANC_AUTOMATION_DATA_STORAGE}:/output
     environment:
       # DICOMWeb Plugin
       - DICOM_WEB_PLUGIN_ENABLED=true
@@ -55,15 +55,10 @@ services:
       # Postgres Plugin
       - POSTGRESQL_PLUGIN_ENABLED=true
       - TZ=Europe/Paris
-      # NEW - for python
+      # 
       - ORTHANC_NAME=MY_Orthanc_Name
       - VERBOSE_ENABLED=true
       - VERBOSE_STARTUP=true
-      # - ORTHANC__PYTHON_SCRIPT=/python/UrographyPipeline.py" # Is in orthanc.json
-      # - ORTHANC__PYTHON_VERBOSE=true
-      #
-      # ORTHANC__PYTHON_SCRIPT: "/python/UrographyPipeline.py"
-      # ORTHANC__PYTHON_VERBOSE: "true"
     command: /etc/orthanc/orthanc.json
     logging:
         driver: "json-file"
@@ -71,11 +66,11 @@ services:
             max-size: "800m"
 
   postgres:
-    image: postgres:13.1
+    image: postgres
     container_name: postgres
     restart: always
     ports:
-      - '5432:5432'
+      - '${POSTGRES_PORT}:${POSTGRES_PORT}'
     networks:
       - backend
     volumes:
