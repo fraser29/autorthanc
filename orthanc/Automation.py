@@ -16,13 +16,13 @@ import shutil
 import logging
 
 # ============ CONFIG ==============================================================================
-auto_scripts="/auto_scripts"
-output="/output"
-DOWNLOAD_DIR = os.path.join(output, 'DOWNLOADING')
-QUEUED_DIR = os.path.join(output, 'QUEUED')
+auto_scripts_dir="automation_scripts"
+output_dir="/output"
+DOWNLOAD_DIR = os.path.join(output_dir, 'DOWNLOADING')
+QUEUED_DIR = os.path.join(output_dir, 'QUEUED')
 USERID = 1000
 GROUPID = 1000
-logfile = os.path.join(auto_scripts, 'orthanc_automation.log')
+logfile = os.path.join(auto_scripts_dir, 'orthanc_automation.log')
 
 # ============ LOGGING =============================================================================
 logger = logging.getLogger(f"autorthanc")
@@ -53,7 +53,7 @@ def readMasterJSON(masterFile):
     masterD = parseJsonToDictionary(masterFile)
 
 def getAllAutomationDictionary():
-    autoscripts = [os.path.join(auto_scripts, i) for i in os.listdir(auto_scripts) if \
+    autoscripts = [os.path.join(auto_scripts_dir, i) for i in os.listdir(auto_scripts_dir) if \
                    (i.endswith('json') and (not i.startswith('master')) and (not 'template' in i))]
     autoDicts = []
     for iFile in autoscripts:
@@ -130,23 +130,19 @@ def getInstanceSaveFile(instanceID, rootDir):
 #     seriesOutDir = f'{patientDir}-SE{metadata["MainDicomTags"]["SeriesNumber"]}-{metadata["MainDicomTags"]["SeriesDate"]}-{metadata["MainDicomTags"]["SeriesInstanceUID"]}'
 #     return seriesOutDir
 
-def getDownloadDirStudy(studyID, prefix=''):
+def getDownloadDirStudy(studyID, rootDir):
     metaPat = json.loads(orthanc.RestApiGet(f'/studies/{studyID}'))
     name = metaPat["PatientMainDicomTags"]["PatientName"].split('^')[0]
-    prefix_ = prefix+'_' if len(prefix) > 0 else prefix
-    patientDir = os.path.join(DOWNLOAD_DIR, f'{prefix_}{metaPat["PatientMainDicomTags"]["PatientID"]}-{name}')
+    patientDir = os.path.join(rootDir, f'{metaPat["PatientMainDicomTags"]["PatientID"]}-{name}')
     return patientDir
 
-def getQueuedDir(studyID):
-    downloadDir = getDownloadDirStudy(studyID)
-    return downloadDir.replace(DOWNLOAD_DIR, QUEUED_DIR)
 
 def changeOwnership(directory, userName, groupName):
     os.system(f"chown -R {userName}:{groupName} {directory}")
 
-def writeOutStudyToDirectory(studyID, prefix='', FORCE=False):
-    downloadDIR = getDownloadDirStudy(studyID, prefix) # Downloading
-    queuedDIR = getQueuedDir(studyID)
+def writeOutStudyToDirectory(studyID, rootDir, FORCE=False):
+    queuedDIR = getDownloadDirStudy(studyID, rootDir) # Downloading
+    downloadDIR = queuedDIR+'.WORKING'
     if os.path.isdir(queuedDIR):
         if FORCE:
             logger.warning(f"Removing {queuedDIR} to rewrite {studyID}")
@@ -236,7 +232,7 @@ def instanceToPyDicom(instanceID):
 def AutoPipelineOnStableStudy(studyID, FORCE=False):
     resDicts = checkAutomationScriptsForStudy(studyID)
     for iResDict in resDicts:
-        writeOutStudyToDirectory(studyID, iResDict['ID'], FORCE=FORCE)
+        writeOutStudyToDirectory(studyID, rootDir=os.path.join(DOWNLOAD_DIR, iResDict['ID']), FORCE=FORCE)
     # if tf:
     #     print(f'Have new series {seriesID}. Is UROGRAPHY: {tf}')
     #     outputDir = writeOutSeriesToDirectory(seriesID, FORCE)

@@ -1,8 +1,7 @@
 {
     "CheckOn": "Study",
     "IsActive": true,
-    "RunImmediately": true,    
-    "CheckIfAlreadyDownloaded": false,
+    "OverwriteIfAlreadyDownloaded": false,
     "Comment": "CHANGEME: enter something sensible and your initials",
     "Tags": [
         {
