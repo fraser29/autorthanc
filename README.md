@@ -1,6 +1,6 @@
 # AUTORTHANC
 
-A docker contained based off **NGINX + Orthanc + Postgres** including python based automation for downloading studies based on prescribed rules. 
+A docker container based off **NGINX + Orthanc + Postgres** including python based automation for downloading studies based on prescribed rules. 
 
 ## Base Docker
 
