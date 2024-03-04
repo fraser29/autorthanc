@@ -6,6 +6,24 @@ A docker container based off **NGINX + Orthanc + Postgres** including python bas
 
 Docker based infrastructure for Orthanc (with postgres). 
 
+## Quick Start
+
+Copy env_example to .env
+
+Edit .env, specifically variables:
+- ORTHANC_DB_MNT : The location (on local machine) for data (dicom) storage
+- ORTHANC_AUTO : The location (on local machine) where autorthnc will find your .json files defining rules for how to process new studies. 
+- AUTOMATION_DATA_STORAGE : The location where data identified by .json scripts found in *ORTHANC_AUTO* will be downloaded to. 
+- POSTGRES_PASSWORD : the postgres DB password. 
+
+Optional variables to edit: 
+- GROUPID (and USERID) : The IDs that should be used to give ownership to the automatically identified and downloaded datasets. *If you are on a single user linux machine, these will likely remain as 1000 & 1000*
+
+## 
+
+*nginx.conf* line 6 : substitute your local machines IP address
+
+
 
 =======
 
