@@ -17,9 +17,8 @@ import logging
 
 # ============ CONFIG ==============================================================================
 auto_scripts_dir="/automation_scripts"
-output_dir="/output"
-DOWNLOAD_DIR = os.path.join(output_dir, 'DOWNLOADING')
-QUEUED_DIR = os.path.join(output_dir, 'QUEUED')
+output_dir="/automation_output"
+DOWNLOAD_DIR = output_dir
 USERID = 1000
 GROUPID = 1000
 logfile = os.path.join(auto_scripts_dir, 'orthanc_automation.log')
@@ -31,14 +30,13 @@ fh = logging.FileHandler(logfile, encoding='utf-8')
 fh.setFormatter(logging.Formatter('%(asctime)s | %(levelname)-7s | %(name)s | %(message)s', 
                                   datefmt='%d-%b-%y %H:%M:%S'))
 logger.addHandler(fh)
-logging.info('Autorthanc automation initiated.')
+logger.info('Autorthanc automation initiated.')
 
 
 # -------------------------------------------------------------------------------------------------
 def initStorage():
     os.makedirs(DOWNLOAD_DIR, exist_ok=True)
-    os.makedirs(QUEUED_DIR, exist_ok=True)
-    logging.info('Autorthanc storage initiated.')
+    logger.info('Autorthanc storage initiated.')
 
 
 def writeDictionaryToJSON(fileName, dictToWrite):
@@ -50,9 +48,6 @@ def parseJsonToDictionary(fileName):
     with open(fileName, 'r') as fid:
         myDict = json.load(fid)
     return myDict
-
-def readMasterJSON(masterFile):
-    masterD = parseJsonToDictionary(masterFile)
 
 def getAllAutomationDictionary():
     autoscripts = [os.path.join(auto_scripts_dir, i) for i in os.listdir(auto_scripts_dir) if \
@@ -83,7 +78,7 @@ def doesStudyMatchAutoDict(studyID, autoDict):
             thisValue = metaStudy['MainDicomTags'][iTag['TagName']].lower()
             allTF.append(iTag['Value'].lower() in thisValue)
         elif iTag['Level'].lower() == 'series':
-            thisValues = [i['MainDicomTags'][iTag['TagName']] for i in metaSeriesList]
+            thisValues = [i['MainDicomTags'][iTag['TagName']].lower() for i in metaSeriesList]
             tf = [iTag['Value'].lower() in i for i in thisValues]
             allTF.append(any(tf))
     return all(allTF)
@@ -94,6 +89,7 @@ def checkAutomationScriptsForStudy(studyID):
     resDicts = []
     for iAuto in allAutoScripts:
         if doesStudyMatchAutoDict(studyID, iAuto):
+            print(f"Processing {studyID} for {iAuto}")
             resDicts.append(iAuto)
     return resDicts
 # ------------------------------------------------------------------------------------------------

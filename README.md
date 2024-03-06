@@ -8,47 +8,50 @@ Docker based infrastructure for Orthanc (with postgres).
 
 ## Quick Start
 
-Copy env_example to .env
+- Copy env_example to .env
+- Edit .env, customise the variables for your specific setup:
+- Make the "Automation" directories (otherwise docker will make for you and they will be owned by root)
+- Add *.json files to your ORTHANC_AUTOMATION_JSON_SCRIPTS_PATH 
+- Start the container: 
+```bash
+docker compose up --build -d
+```
+- View the running ORTHANC instance at [localhost/orthanc](http://localhost/orthanc)
+- Add some dicoms to your ORTHANC instance and watch the automation take place
 
-Edit .env, specifically variables:
-- ORTHANC_DB_MNT : The location (on local machine) for data (dicom) storage
-- ORTHANC_AUTO_SCRIPTS : The location (on local machine) where autorthanc will find your .json files defining rules for how to process new studies. 
-- ORTHANC_AUTOMATION_DATA_STORAGE : The location where data identified by .json scripts found in *ORTHANC_AUTO_SCRIPTS* will be downloaded to. 
-- POSTGRES_PASSWORD : the postgres DB password. 
-
-Optional variables to edit: 
-- GROUPID (and USERID) : The IDs that should be used to give ownership to the automatically identified and downloaded datasets. *If you are on a single user linux machine, these will likely remain as 1000 & 1000*
-
-## 
-
-*nginx.conf* line 6 : substitute your local machines IP address
+----- 
 
 
+## AUTOMATION
 
-=======
+The automation portion of this docker will inspect every new study passed to the Orthanc instance, once that study has become "stable" 
 
-## DEVELOPMENT 
+Stable is defined as no new images appeared for a period of ?? seconds. 
 
-Idea is that have standard osimis orthanc docker, with a mounted volume at /var/lib/automation
+If that study meets criterior defined by an XXX.json under ORTHANC_AUTOMATION_JSON_SCRIPTS_PATH then that study will be downloaded to a patient specific directory under: *ORTHANC_AUTOMATION_STORAGE_PATH/XXX/pid_name_examid*
 
-A python script runs upon every study stable shall read all json files under /var/lib/automation/*.json 
+**Note:** During the downloading the output directory will be named, e.g.: 
+*ORTHANC_AUTOMATION_STORAGE_PATH/XXX/pid_name_examid.WORKING*
 
-Each file contains instructions: 
-1. To to define if the inspected study belongs to this rule
-2. Actions to take if study passes (1)
+Once downloading is finished the name will be changed to:
+*ORTHANC_AUTOMATION_STORAGE_PATH/XXX/pid_name_examid*
 
-An automation_template.json file exists in directory 'automation_scripts'. 
+Of course *pid*, *name* and *examid* are replaced with study specific values.  
 
 ### automation.json file
 
-- The automation_template.json will be ignored by the Automation.py script. 
+**NOTE** Any *.json files with *master* or *template* in their name will be ignoree by the automation script. 
+
+- The automation_template.json will be ignored by the atomation.py script. 
 - Copy the automation_template.json to build your own automation rule.
 - **Name** your new automation.json to something sensible and unique in the "automation_scripts" directory.
-- Studies that pass your automation.json rule will be downloaded to a directroy named the same as your automation.json script under *AUTOMATION_DATA_STORAGE* (see env_example) 
+- Studies that pass your automation.json rule will be downloaded to a directroy named the same as your automation.json script under *AUTOMATION_DATA_STORAGE*
+
 
 ### Example:
 
-If your *AUTOMATION_DATA_STORAGE* variable is set to "/home/username/data" and you supply an automation json named: brain_study_X.json. 
+You copy env_example to .env and set *ORTHANC_AUTOMATION_STORAGE_PATH* to */home/username/data*
+If you save in *ORTHANC_AUTOMATION_JSON_SCRIPTS_PATH* an automation json named: brain_study_X.json. 
 When that automation script identifies a new study arriving in the dicom server, say based on the following rules:
 - StudyDescription tag contains "brain"
 - (for any series in study) SeriesDescription tag contains "axial t1"
@@ -57,6 +60,31 @@ Then that study will be automatically downloaded to directory:
 ```bash
 /home/username/data/brain_study_x/PatientID-PatientName
 ```
+
+In this case the brain_study_x.json would look something like:
+```json
+{
+    "CheckOn": "Study", 
+    "IsActive": true, 
+    "OverwriteIfAlreadyDownloaded": true, 
+    "Comment": "Find subjects for brain study", 
+    "Tags": [
+        {
+            "TagName": "StudyDescription",
+            "Level": "Study",
+            "Value": "brain"
+        },
+        {
+            "TagName": "SeriesDescription",
+            "Level": "Series",
+            "Value": "axial t1"
+        }
+    ]
+}
+```
+
+
+### Templates
 
 The template file is as follows and below are explanations on tags:
 
@@ -118,27 +146,18 @@ A study_stable or series_stable task may do any/all of the  following steps:
 - Anonymise  dicoms
 - ZIP data. 
 
-*NOTE* : package [miresearch](https://github.com/fraser29/miresearch) is designed to work in combination with autorthanc by watching docnload directorys for completed data sets to then perform extra post processing steps, e.g. to initiate processing pipelines. 
+*NOTE* : package [miresearch](https://github.com/fraser29/miresearch) is designed to work in combination with autorthanc by watching download directorys for completed data sets to then perform extra post processing steps, e.g. to initiate processing pipelines. 
 
 
 
 --------------------
 
 Docker images :
-- osimis/orthanc:20.2.0
+- orthancteam/orthanc:20.2.0
 - postgres:12.1
 
 To deploy the infrastructure, run `docker compose up` or `docker compose up -d` (background task).
 
-## Access OHIF Viewer
-A few seconds after deploying the images, the viewer can be accessed at [http://127.0.0.1:81/](http://127.0.0.1:81/) from your browser.
-
-## Access Orthanc admin interface
-
-Orthanc's admin interface can be reached from the navigator at [http://127.0.0.1:81/pacs-admin](http://127.0.0.1:80/pacs-admin), then sign in
-
-- Username: **my_username**
-- Password: **my_password**
 
 ## How to shutdown and clean up
 
@@ -157,10 +176,3 @@ docker network prune -f
 rm -rf orthanc_db pg_data
 ```
 
-## Python script action:
-
-- Triggered on StudyStable (and SeriesStable possible - but not used) 
-- Recognises a series / study based upon rules defined in json script 
-- Performs actions 
-  - First to DOWNLOADING directory
-  - Once complete copies to QUEUED directory

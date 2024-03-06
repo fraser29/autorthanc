@@ -1,0 +1,23 @@
+# Save a copy of this file as .env 
+# Edit this file with your own customisation (paths to local directories etc)
+
+# These values will be used in the docker-compose.yml 
+
+# 
+# ORTHANC - storage
+#
+ORTAHNC_DB_STORAGE_PATH=/path/to/local/directory/for/dicom/storage
+
+#
+# ORTHANC - AET
+#
+ORTHANC_AET_NAME=AUTORTHANCAET
+ORTHANC_AET_PORT=4006
+
+#
+# ORTHANC - automation paths
+#
+## These directroies should exist with desired (user) ownership
+## on the local system
+ORTHANC_AUTOMATION_JSON_SCRIPTS_PATH=/path/to/local/directory/for/json/scripts
+ORTHANC_AUTOMATION_STORAGE_PATH=/path/to/local/storage/for/download/data
