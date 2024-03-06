@@ -16,7 +16,7 @@ import shutil
 import logging
 
 # ============ CONFIG ==============================================================================
-auto_scripts_dir="automation_scripts"
+auto_scripts_dir="/automation_scripts"
 output_dir="/output"
 DOWNLOAD_DIR = os.path.join(output_dir, 'DOWNLOADING')
 QUEUED_DIR = os.path.join(output_dir, 'QUEUED')
@@ -38,6 +38,8 @@ logging.info('Autorthanc automation initiated.')
 def initStorage():
     os.makedirs(DOWNLOAD_DIR, exist_ok=True)
     os.makedirs(QUEUED_DIR, exist_ok=True)
+    logging.info('Autorthanc storage initiated.')
+
 
 def writeDictionaryToJSON(fileName, dictToWrite):
     with open(fileName, 'w') as fp:

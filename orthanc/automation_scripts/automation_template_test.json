@@ -1,0 +1,13 @@
+{
+    "CheckOn": "Study",
+    "IsActive": true,
+    "OverwriteIfAlreadyDownloaded": false,
+    "Comment": "Very simple test rule that will return true and initiate pipeline if any series contains letter a in description",
+    "Tags": [
+        {
+            "TagName": "SeriesDescription",
+            "Level": "Series",
+            "Value": "a"
+        }
+    ]
+}

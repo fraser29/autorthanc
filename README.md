@@ -12,8 +12,8 @@ Copy env_example to .env
 
 Edit .env, specifically variables:
 - ORTHANC_DB_MNT : The location (on local machine) for data (dicom) storage
-- ORTHANC_AUTO : The location (on local machine) where autorthnc will find your .json files defining rules for how to process new studies. 
-- AUTOMATION_DATA_STORAGE : The location where data identified by .json scripts found in *ORTHANC_AUTO* will be downloaded to. 
+- ORTHANC_AUTO_SCRIPTS : The location (on local machine) where autorthanc will find your .json files defining rules for how to process new studies. 
+- ORTHANC_AUTOMATION_DATA_STORAGE : The location where data identified by .json scripts found in *ORTHANC_AUTO_SCRIPTS* will be downloaded to. 
 - POSTGRES_PASSWORD : the postgres DB password. 
 
 Optional variables to edit: 
