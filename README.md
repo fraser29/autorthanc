@@ -28,13 +28,13 @@ The automation portion of this docker will inspect every new study passed to the
 
 Stable is defined as no new images appeared for a period of ?? seconds. 
 
-If that study meets criterior defined by an XXX.json under ORTHANC_AUTOMATION_JSON_SCRIPTS_PATH then that study will be downloaded to a patient specific directory under: *ORTHANC_AUTOMATION_STORAGE_PATH/XXX/pid_name_examid*
+If that study meets criterior defined by an XXX.json under ORTHANC_AUTOMATION_JSON_SCRIPTS_PATH then that study will be downloaded to a patient specific directory under: *ORTHANC_AUTOMATION_STORAGE_PATH/XXX/pid-name-examid*
 
 **Note:** During the downloading the output directory will be named, e.g.: 
-*ORTHANC_AUTOMATION_STORAGE_PATH/XXX/pid_name_examid.WORKING*
+*ORTHANC_AUTOMATION_STORAGE_PATH/XXX/pid-name-examid.WORKING*
 
 Once downloading is finished the name will be changed to:
-*ORTHANC_AUTOMATION_STORAGE_PATH/XXX/pid_name_examid*
+*ORTHANC_AUTOMATION_STORAGE_PATH/XXX/pid-name-examid*
 
 Of course *pid*, *name* and *examid* are replaced with study specific values.  
 

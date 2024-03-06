@@ -7,6 +7,7 @@
 # ORTHANC - storage
 #
 ORTAHNC_DB_STORAGE_PATH=/path/to/local/directory/for/dicom/storage
+ORTHANC_STABLE_AGE=300
 
 #
 # ORTHANC - AET

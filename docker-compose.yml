@@ -43,6 +43,7 @@ services:
       ORTHANC__DICOM_PORT: ${ORTHANC_AET_PORT} 
       ORTHANC__REGISTERED_USERS: |
         {"autorthanc": "autorthanc"}
+      ORTHANC__STABLE_AGE: ${ORTHANC_STABLE_AGE}
 
       ##
       PYTHON_PLUGIN_ENABLED: "true"

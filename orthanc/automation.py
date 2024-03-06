@@ -92,6 +92,23 @@ def checkAutomationScriptsForStudy(studyID):
             print(f"Processing {studyID} for {iAuto}")
             resDicts.append(iAuto)
     return resDicts
+
+def moveDirSrc_toDest(dirSrc, dirDest):
+    for iSrc, _, files in os.walk(dirSrc):
+        iDest = iSrc.replace(dirSrc, dirDest, 1)
+        if not os.path.exists(iDest):
+            os.makedirs(iDest)
+        for file_ in files:
+            src_file = os.path.join(iSrc, file_)
+            dst_file = os.path.join(iDest, file_)
+            if os.path.exists(dst_file):
+                # in case of the src and dst are the same file
+                if os.path.samefile(src_file, dst_file):
+                    continue
+                os.remove(dst_file)
+            shutil.move(src_file, iDest)
+    # finally remove the original
+    shutil.rmtree(dirSrc)
 # ------------------------------------------------------------------------------------------------
 
 
@@ -124,10 +141,16 @@ def getInstanceSaveFile(instanceID, rootDir):
 #     seriesOutDir = f'{patientDir}-SE{metadata["MainDicomTags"]["SeriesNumber"]}-{metadata["MainDicomTags"]["SeriesDate"]}-{metadata["MainDicomTags"]["SeriesInstanceUID"]}'
 #     return seriesOutDir
 
-def getDownloadDirStudy(studyID, rootDir):
+def getStudyDescriptor(studyID):
+    """Retrun pid-name-examid"""
     metaPat = json.loads(orthanc.RestApiGet(f'/studies/{studyID}'))
     name = metaPat["PatientMainDicomTags"]["PatientName"].split('^')[0]
-    patientDir = os.path.join(rootDir, f'{metaPat["PatientMainDicomTags"]["PatientID"]}-{name}')
+    examid = metaPat["MainDicomTags"]["StudyID"]
+    return f'{metaPat["PatientMainDicomTags"]["PatientID"]}-{name}-{examid}'
+
+
+def getDownloadDirStudy(studyID, rootDir):
+    patientDir = os.path.join(rootDir, getStudyDescriptor(studyID))
     return patientDir
 
 
@@ -139,12 +162,11 @@ def writeOutStudyToDirectory(studyID, rootDir, FORCE=False):
     downloadDIR = queuedDIR+'.WORKING'
     if os.path.isdir(queuedDIR):
         if FORCE:
-            logger.warning(f"Removing {queuedDIR} to rewrite {studyID}")
-            shutil.rmtree(queuedDIR)
+            logger.warning(f"{queuedDIR} exists - appending / overwriting {getStudyDescriptor(studyID)}")
         else:
-            logger.warning(f"{studyID} already exists - not written out")
+            logger.warning(f"{getStudyDescriptor(studyID)} already exists - not written out")
             return queuedDIR
-    logger.info(f"Begin writing out study {studyID}")
+    logger.info(f"Begin writing out study {getStudyDescriptor(studyID)}")
     instances = getInstancesStudy(studyID)
     os.makedirs(downloadDIR, exist_ok=True)
     for instanceId in instances:
@@ -153,8 +175,9 @@ def writeOutStudyToDirectory(studyID, rootDir, FORCE=False):
         dicom = instanceToPyDicom(instanceId['ID'])
         dicom.save_as(instanceSaveFile, write_like_original=True)
         #
-    logger.info(f"Finished writting {studyID}")
-    os.rename(downloadDIR, queuedDIR)
+    logger.info(f"Finished writting {getStudyDescriptor(studyID)}")
+    moveDirSrc_toDest(downloadDIR, queuedDIR)
+    # os.rename(downloadDIR, queuedDIR)
     logger.info(f"Moved {downloadDIR} to {queuedDIR}")
     changeOwnership(queuedDIR, USERID, GROUPID)
     logger.info(f"Set ownership of {queuedDIR} to {USERID}:{GROUPID}")
