@@ -25,9 +25,6 @@ services:
     depends_on: [index-db]
     restart: always
     ports: ["8042:8042"]
-    # networks:
-    #   - frontend
-    #   - backend
     volumes:
       ## Storage volumes to be customised 
       # Storage volume for raw dicoms
@@ -35,7 +32,6 @@ services:
       # Storage for Automation
       - ${ORTHANC_AUTOMATION_JSON_SCRIPTS_PATH}:/automation_scripts
       - ${ORTHANC_AUTOMATION_STORAGE_PATH}:/automation_output
-      # Python script
     environment:
       ## Environment variables for customisation:
       ORTHANC__NAME: "autorthanc"
