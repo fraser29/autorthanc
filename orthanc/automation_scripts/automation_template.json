@@ -1,8 +1,8 @@
 {
     "CheckOn": "Study",
     "IsActive": true,
-    "OverwriteIfAlreadyDownloaded": false,
     "Comment": "CHANGEME: enter something sensible and your initials",
+    "Action" : "DOWNLOAD or FORWARD",
     "Tags": [
         {
             "TagName": "PatientName",

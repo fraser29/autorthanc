@@ -46,7 +46,6 @@ The template file is as follows and below are explanations on tags:
 {
     "CheckOn": "Study", 
     "IsActive": true, 
-    "OverwriteIfAlreadyDownloaded": true, 
     "Comment": "CHANGEME: enter something sensible and your initials", 
     "Tags": [
         {
@@ -74,8 +73,6 @@ The template file is as follows and below are explanations on tags:
   - str : "Study" or "Series" : Do we check this rule when a Study is stable or a Series is stable
 - IsActive:
   - bool : Can set inactive. 
-- OverwriteIfAlreadyDownloaded
-  - bool : Usually leave as true, incase a study is incompletely pushed and receives more data at a later time. 
 - Comment: 
   - str : A comment about the rule
 - Tags:
