@@ -1,52 +1,24 @@
-# docker-compose environment file
+# Save a copy of this file as .env 
+# Edit this file with your own customisation (paths to local directories etc)
+
+# These values will be used in the docker-compose.yml 
+
+# 
+# ORTHANC - storage
 #
-# This should be personalised for your setup
-#
-# When you set the same environment variable in multiple files,
-# here’s the priority used by Compose to choose which value to use:
-#
-#  1. Compose file
-#  2. Shell environment variables
-#  3. Environment file
-#  4. Dockerfile
-#  5. Variable is not defined
+ORTAHNC_DB_STORAGE_PATH=/path/to/local/directory/for/dicom/storage
+ORTHANC_STABLE_AGE=300
 
 #
-# Nginx configuration
+# ORTHANC - AET
 #
-NGINX_DEFAULT_CONF=./config/nginx.conf
+ORTHANC_AET_NAME=AUTORTHANCAET
+ORTHANC_AET_PORT=4006
 
 #
-# OHIF Viewer
+# ORTHANC - automation paths
 #
-VIEWER_DIST=./viewer-dist
-VIEWER_CONFIG=./config/app-config.js
-
-#
-# Orthanc core with plugins
-#
-ORTHANC_CONFIG=./config/orthanc.json
-ORTHANC_DB_MNT=/Volume/ORTHANC_DB_STORAGE
-# This is location where automation.json files are
-ORTHANC_AUTO=/Volume/ORTHANC_AUTOMATION_SCRIPTS
-
-
-
-#
-# PostgreSQL database - default values should not be used in production
-#
-POSTGRES_DATA_MNT=./pg_data/data
-PGDATA=/var/lib/postgresql/data
-
-POSTGRES_DB=orthanc
-POSTGRES_PORT=5432
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=pgpassword
-
-#
-# Automation stuff
-#
-AUTOMATION_DATA_STORAGE=/Volume/ORTHANC_AUTOMATION_STORAGE
-GROUPID=1000
-USERID=1000
-
+## These directroies should exist with desired (user) ownership
+## on the local system
+ORTHANC_AUTOMATION_JSON_SCRIPTS_PATH=/path/to/local/directory/for/json/scripts
+ORTHANC_AUTOMATION_STORAGE_PATH=/path/to/local/storage/for/download/data
