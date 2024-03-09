@@ -16,12 +16,15 @@ import shutil
 import logging
 
 # ============ CONFIG ==============================================================================
-auto_scripts_dir="/automation_scripts"
+auto_scripts_dir="/automation_scripts" # This is directory in docker file system - do not change
 output_dir="/automation_output"
 DOWNLOAD_DIR = output_dir
 USERID = 1000
 GROUPID = 1000
 logfile = os.path.join(auto_scripts_dir, 'orthanc_automation.log')
+DOWNLOAD = "DOWNLOAD"
+FORWARD = "FORWARD"
+DestinationModality = "DestinationModality"
 
 # ============ LOGGING =============================================================================
 logger = logging.getLogger(f"autorthanc")
@@ -186,11 +189,23 @@ def instanceToPyDicom(instanceID):
     dicom = pydicom.dcmread(io.BytesIO(f))
     return dicom
 
+def sendStudyToOtherModality(studyID, remoteModality):
+    originatorAET = os.getenv("ORTHANC_AET_NAME")
+    logger.info(f"Moving {getStudyDescriptor(studyID)} from {originatorAET} to {remoteModality}")
+    orthanc.RestApiPost(f'/modalities/{remoteModality}/store', 
+                        '{"Asynchronous": false,"Compress": true,"Permissive": true,"Priority": 0,"Resources": ["' + \
+                            studyID + '"],"Synchronous": false, "MoveOriginatorAet": "' + \
+                                originatorAET + '", "MoveOriginatorID": ' + str(0) + ', "Permissive": true, "StorageCommitment": true}')
+
 def AutoPipelineOnStableStudy(studyID, FORCE=False):
     resDicts = checkAutomationScriptsForStudy(studyID)
     for iResDict in resDicts:
-        writeOutStudyToDirectory(studyID, rootDir=os.path.join(DOWNLOAD_DIR, iResDict['ID']), FORCE=FORCE)
-    return 0 # 
+        if iResDict["Action"] == DOWNLOAD:
+            writeOutStudyToDirectory(studyID, rootDir=os.path.join(DOWNLOAD_DIR, iResDict['ID']), FORCE=FORCE)
+        elif iResDict["Action"] == FORWARD:
+            if DestinationModality in iResDict.keys():
+                sendStudyToOtherModality(studyID, iResDict[DestinationModality])
+    return 0 
             
 # ================================================================================================================
 

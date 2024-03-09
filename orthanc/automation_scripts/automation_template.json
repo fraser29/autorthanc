@@ -3,6 +3,7 @@
     "IsActive": true,
     "Comment": "CHANGEME: enter something sensible and your initials",
     "Action" : "DOWNLOAD or FORWARD",
+    "DestinationModality": "Name of destination for FORWARD",
     "Tags": [
         {
             "TagName": "PatientName",

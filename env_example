@@ -16,6 +16,12 @@ ORTHANC_AET_NAME=AUTORTHANCAET
 ORTHANC_AET_PORT=4006
 
 #
+# ORTHANC - AET - REMOTE MODALITIES
+#
+## Note this needs to be a single line:
+ORTHANC__DICOM_MODALITIES={"MODALITY_NAME": ["REMOTEAETNAME", "REMOTE-IP", 4242]}
+
+#
 # ORTHANC - automation paths
 #
 ## These directroies should exist with desired (user) ownership
