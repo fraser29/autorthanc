@@ -92,11 +92,17 @@ def doesStudyMatchAutoDict(studyID, autoDict):
 
 
 def checkAutomationScriptsForStudy(studyID):
+    """Will retrun all json that match this study
+    Args:
+        studyID (str): study ID
+    Returns:
+        list: list of dictionaries with JSON information
+    """
     allAutoScripts = getAllAutomationDictionary()
     resDicts = []
     for iAuto in allAutoScripts:
         if doesStudyMatchAutoDict(studyID, iAuto):
-            print(f"Processing {studyID} for {iAuto}")
+            logger.info(f"Processing {studyID} for JSON: {iAuto['ID']}")
             resDicts.append(iAuto)
     return resDicts
 
@@ -190,7 +196,7 @@ def instanceToPyDicom(instanceID):
     return dicom
 
 def sendStudyToOtherModality(studyID, remoteModality):
-    originatorAET = os.getenv("ORTHANC_AET_NAME")
+    originatorAET = os.getenv("ORTHANC__DICOM_AET")
     logger.info(f"Moving {getStudyDescriptor(studyID)} from {originatorAET} to {remoteModality}")
     orthanc.RestApiPost(f'/modalities/{remoteModality}/store', 
                         '{"Asynchronous": false,"Compress": true,"Permissive": true,"Priority": 0,"Resources": ["' + \

@@ -40,7 +40,8 @@ services:
       ORTHANC__REGISTERED_USERS: |
         {"autorthanc": "autorthanc"}
       ORTHANC__STABLE_AGE: ${ORTHANC_STABLE_AGE}
-
+      ORTHANC__DICOM_MODALITIES: ${ORTHANC_DICOM_MODALITIES}
+      
       ##
       PYTHON_PLUGIN_ENABLED: "true"
       ORTHANC__PYTHON_SCRIPT: "/scripts/automation.py"
