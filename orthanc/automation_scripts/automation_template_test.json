@@ -1,7 +1,6 @@
 {
     "CheckOn": "Study",
     "IsActive": false,
-    "OverwriteIfAlreadyDownloaded": false,
     "Action" : "DOWNLOAD",
     "Comment": "Very simple test rule that will return true and initiate pipeline if any series contains letter a in description",
     "Tags": [

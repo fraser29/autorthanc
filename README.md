@@ -66,7 +66,7 @@ In this case the brain_study_x.json would look something like:
 {
     "CheckOn": "Study", 
     "IsActive": true, 
-    "OverwriteIfAlreadyDownloaded": true, 
+    "Action" : "DOWNLOAD",
     "Comment": "Find subjects for brain study", 
     "Tags": [
         {
@@ -92,6 +92,8 @@ The template file is as follows and below are explanations on tags:
 {
     "CheckOn": "Study", 
     "IsActive": true, 
+    "Action" : "DOWNLOAD or FORWARD",
+    "DestinationModality": "Name of destination for FORWARD",
     "Comment": "CHANGEME: enter something sensible and your initials", 
     "Tags": [
         {
