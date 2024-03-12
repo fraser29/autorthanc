@@ -5,7 +5,7 @@ services:
     image: nginx:1.19.5-alpine
     depends_on: [orthanc]
     restart: always
-    ports: ["${ORTAHNC_WEB_PORT}:80"]
+    ports: ["${ORTHANC_WEB_PORT}:80"]
     # networks:
     #   - frontend
     #   - backend
@@ -24,7 +24,7 @@ services:
     build: orthanc
     depends_on: [index-db]
     restart: always
-    ports: ["8042:8042"]
+    ports: ["${ORTHANC_AET_PORT}:${ORTHANC_AET_PORT}", "8042:8042"]
     volumes:
       ## Storage volumes to be customised 
       # Storage volume for raw dicoms

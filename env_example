@@ -6,7 +6,7 @@
 # 
 # ORTHANC - web
 #
-ORTAHNC_WEB_PORT=80
+ORTHANC_WEB_PORT=80
 
 # 
 # ORTHANC - storage

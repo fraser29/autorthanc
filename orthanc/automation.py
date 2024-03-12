@@ -33,7 +33,7 @@ fh = logging.FileHandler(logfile, encoding='utf-8')
 fh.setFormatter(logging.Formatter('%(asctime)s | %(levelname)-7s | %(name)s | %(message)s', 
                                   datefmt='%d-%b-%y %H:%M:%S'))
 logger.addHandler(fh)
-logger.info('Autorthanc automation initiated.')
+logger.info('===== START AUTORTHANC ===== ')
 
 
 # -------------------------------------------------------------------------------------------------
@@ -79,15 +79,26 @@ def doesStudyMatchAutoDict(studyID, autoDict):
     allTF = []
     for iTag in autoDict['Tags']:
         if iTag['Level'].lower() == 'patient':
-            thisValue = metaPatient['MainDicomTags'][iTag['TagName']].lower()
-            allTF.append(iTag['Value'].lower() in thisValue)
+            try:
+                thisValue = metaPatient['MainDicomTags'].get(iTag['TagName'], 'NONE').lower()
+                allTF.append(iTag['Value'].lower() in thisValue)
+            except TypeError:
+                return False
         elif iTag['Level'].lower() == 'study':
-            thisValue = metaStudy['MainDicomTags'][iTag['TagName']].lower()
-            allTF.append(iTag['Value'].lower() in thisValue)
+            try:
+                thisValue = metaStudy['MainDicomTags'].get(iTag['TagName'], 'NONE').lower()
+                allTF.append(iTag['Value'].lower() in thisValue)
+            except TypeError:
+                return False
         elif iTag['Level'].lower() == 'series':
-            thisValues = [i['MainDicomTags'][iTag['TagName']].lower() for i in metaSeriesList]
-            tf = [iTag['Value'].lower() in i for i in thisValues]
-            allTF.append(any(tf))
+            thisValues = [i['MainDicomTags'].get(iTag['TagName'], 'NONE').lower() for i in metaSeriesList]
+            subTF = []
+            for i in thisValues:
+                try:
+                    subTF.append(iTag['Value'].lower() in i)
+                except TypeError:
+                    pass
+            allTF.append(any(subTF))
     return all(allTF)
 
 
@@ -140,8 +151,8 @@ def getInstancesStudy(studyID):
 def getInstanceSaveFile(instanceID, rootDir):
     metadata = json.loads(orthanc.RestApiGet(f'/instances/{instanceID}'))
     metaSer = json.loads(orthanc.RestApiGet(f'/series/{metadata["ParentSeries"]}'))
-    seNum = metaSer["MainDicomTags"]["SeriesNumber"]
-    seDate = metaSer["MainDicomTags"]["SeriesDate"]
+    seNum = metaSer["MainDicomTags"].get("SeriesNumber", "XX")
+    seDate = metaSer["MainDicomTags"].get("SeriesDate", "UNKNOWN")
     seUID = metaSer["MainDicomTags"]["SeriesInstanceUID"]
     return os.path.join(rootDir, f'SE{seNum}-{seDate}-{seUID}', f'{metadata["MainDicomTags"]["SOPInstanceUID"]}.dcm')
 
@@ -149,8 +160,8 @@ def getInstanceSaveFile(instanceID, rootDir):
 def getStudyDescriptor(studyID):
     """Retrun pid-name-examid"""
     metaPat = json.loads(orthanc.RestApiGet(f'/studies/{studyID}'))
-    name = metaPat["PatientMainDicomTags"]["PatientName"].split('^')[0]
-    examid = metaPat["MainDicomTags"]["StudyID"]
+    name = metaPat["PatientMainDicomTags"].get("PatientName", "UNKNOWN^").split('^')[0]
+    examid = metaPat["MainDicomTags"].get("StudyID", "UNKNOWN")
     return f'{metaPat["PatientMainDicomTags"]["PatientID"]}-{name}-{examid}'
 
 
@@ -186,7 +197,7 @@ def writeOutStudyToDirectory(studyID, rootDir, FORCE=False):
     logger.info(f"Moved {downloadDIR} to {queuedDIR}")
     changeOwnership(queuedDIR, USERID, GROUPID)
     logger.info(f"Set ownership of {queuedDIR} to {USERID}:{GROUPID}")
-    logger.info(f"WRITTEN: {queuedDIR}")
+    logger.info(f"DONE: WRITTEN: {queuedDIR}")
     return queuedDIR
 
 def instanceToPyDicom(instanceID):
@@ -202,15 +213,18 @@ def sendStudyToOtherModality(studyID, remoteModality):
                         '{"Asynchronous": false,"Compress": true,"Permissive": true,"Priority": 0,"Resources": ["' + \
                             studyID + '"],"Synchronous": false, "MoveOriginatorAet": "' + \
                                 originatorAET + '", "MoveOriginatorID": ' + str(0) + ', "Permissive": true, "StorageCommitment": true}')
+    logger.info(f"DONE: FORWARDED {getStudyDescriptor(studyID)} from {originatorAET} to {remoteModality}")
 
 def AutoPipelineOnStableStudy(studyID, FORCE=False):
     resDicts = checkAutomationScriptsForStudy(studyID)
     for iResDict in resDicts:
-        if iResDict["Action"] == DOWNLOAD:
+        if iResDict.get("Action", "NONE") == DOWNLOAD:
             writeOutStudyToDirectory(studyID, rootDir=os.path.join(DOWNLOAD_DIR, iResDict['ID']), FORCE=FORCE)
-        elif iResDict["Action"] == FORWARD:
+        elif iResDict.get("Action", "NONE") == FORWARD:
             if DestinationModality in iResDict.keys():
                 sendStudyToOtherModality(studyID, iResDict[DestinationModality])
+        else:
+            logger.warning(f"Unknow study action described by {iResDict['ID']} : {iResDict.get('Action', 'NONE')}")
     return 0 
             
 # ================================================================================================================
@@ -228,7 +242,7 @@ def OnChange(changeType, level, resource):
             AutoPipelineOnStableStudy(resource, FORCE=True)
             # Force true so that if paused and then restarted then will overwrite
         except Exception as e: # Catch all general exceptions and debug
-            logger.critical(e)
+            logger.exception(f"In STABLE_STUDY for studyID: {resource}")
 
 
 # ================================================================================================================
