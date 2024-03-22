@@ -1,0 +1,8 @@
+title: autorthanc
+description: A Docker containerized DICOM server using Orthanc Docker image, PostgreSQL database, Nginx server, and Python code for automatic downloading or forwarding of studies based on provided JSON rules.
+theme: just-the-docs
+
+url: https://just-the-docs.github.io
+
+aux_links:
+  Template Repository: https://github.com/just-the-docs/just-the-docs-template
