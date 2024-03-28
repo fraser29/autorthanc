@@ -19,8 +19,8 @@ import logging
 auto_scripts_dir="/automation_scripts" # This is directory in docker file system - do not change
 output_dir="/automation_output"
 DOWNLOAD_DIR = output_dir
-USERID = 1000
-GROUPID = 1000
+USERID = os.getenv("UID", '1000')
+GROUPID = os.getenv("GID", '1000')
 logfile = os.path.join(auto_scripts_dir, 'orthanc_automation.log')
 DOWNLOAD = "DOWNLOAD"
 FORWARD = "FORWARD"
@@ -174,6 +174,9 @@ def changeOwnership(directory, userName, groupName):
     os.system(f"chown -R {userName}:{groupName} {directory}")
 
 def writeOutStudyToDirectory(studyID, rootDir, FORCE=False):
+    if not os.path.isdir(rootDir):
+        os.makedirs(rootDir, exist_ok=True)
+        changeOwnership(rootDir, USERID, GROUPID)
     queuedDIR = getDownloadDirStudy(studyID, rootDir) # Downloading
     downloadDIR = queuedDIR+'.WORKING'
     if os.path.isdir(queuedDIR):
@@ -184,7 +187,9 @@ def writeOutStudyToDirectory(studyID, rootDir, FORCE=False):
             return queuedDIR
     logger.info(f"Begin writing out study {getStudyDescriptor(studyID)}")
     instances = getInstancesStudy(studyID)
-    os.makedirs(downloadDIR, exist_ok=True)
+    if not os.path.isdir(downloadDIR):
+        os.makedirs(downloadDIR, exist_ok=True)
+        changeOwnership(downloadDIR, USERID, GROUPID)
     for instanceId in instances:
         instanceSaveFile = getInstanceSaveFile(instanceId['ID'], downloadDIR)
         os.makedirs(os.path.split(instanceSaveFile)[0], exist_ok=True)
@@ -245,6 +250,17 @@ def OnChange(changeType, level, resource):
             logger.exception(f"In STABLE_STUDY for studyID: {resource}")
 
 
+def ForceAutoPipelineOnStableStudy(output, uri, **request):
+    if request['method'] == 'GET':
+        # Retrieve the instance ID from the regular expression (*)
+        studyID = request['groups'][0]
+        resDicts = checkAutomationScriptsForStudy(studyID)
+        output.AnswerBuffer(f"Running AutoPipelineOnStableStudy on {studyID}\n Results:\n{resDicts}", 'text/plain')
+        AutoPipelineOnStableStudy(studyID, FORCE=True)
+    else:
+        output.SendMethodNotAllowed('GET')
+
+
 # ================================================================================================================
 #   MAIN
 # ================================================================================================================
@@ -254,6 +270,12 @@ def OnChange(changeType, level, resource):
 #       When ever a change occurs then "OnChange" function called
 #       If the change is what we want (a stable series) 
 orthanc.RegisterOnChangeCallback(OnChange)
+
+# (2) # add callback to 
+orthanc.RegisterRestCallback('/forcestablesignal/(.*)', ForceAutoPipelineOnStableStudy)  # (*)
+# add a "Force Automation Action" button in the Orthanc Explorer
+with open("/scripts/extend-explorer.js", "r") as f:
+    orthanc.ExtendOrthancExplorer(f.read())
 
 # This is ensure set up correctly
 initStorage()

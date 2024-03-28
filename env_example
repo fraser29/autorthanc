@@ -3,6 +3,9 @@
 
 # These values will be used in the docker-compose.yml 
 
+UID=1000
+GID=1000
+
 # 
 # ORTHANC - web
 #
