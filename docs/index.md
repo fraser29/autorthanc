@@ -19,7 +19,7 @@ The "autorthanc" project integrates Orthanc, a lightweight DICOM server, with ad
 - Python Scripts
 
     
-## Functionality</h2>
+## Functionality
 
 The project offers the following key functionalities:
 
@@ -51,4 +51,3 @@ Details about the Python code used in Autorthanc.
 
 ----
 
-[This documentation built off Just the Docs](https://just-the-docs.github.io/just-the-docs/)

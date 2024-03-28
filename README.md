@@ -2,6 +2,9 @@
 
 A docker container based off **NGINX + Orthanc + Postgres** including python based automation for downloading studies based on prescribed rules. 
 
+> [!IMPORTANT]  
+> This package is currently undergoing frequent development and testing. PLease check back reguarly for version updates.
+
 ## Base Docker
 
 Docker based infrastructure for Orthanc (with postgres). 
@@ -175,3 +178,4 @@ docker network prune -f
 rm -rf orthanc_db pg_data
 ```
 
+See the full documentation [here](https://fraser29.github.io/autorthanc/)
