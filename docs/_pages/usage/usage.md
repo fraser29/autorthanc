@@ -48,7 +48,7 @@ The automation portion of this docker will inspect every new study passed to the
 
 Stable is defined as no new images appeared for a period of X seconds (X is defined using variable ORTHANC_STABLE_AGE in the .env file - defaults to 300 seconds). 
 
-If that study meets criterior defined by an XXX.json under ORTHANC_AUTOMATION_JSON_SCRIPTS_PATH then that study will be downloaded to a patient specific directory under: *ORTHANC_AUTOMATION_STORAGE_PATH/XXX/pid-name-examid*
+If that study meets criteria defined by an XXX.json under ORTHANC_AUTOMATION_JSON_SCRIPTS_PATH then that study will be downloaded to a patient specific directory under: *ORTHANC_AUTOMATION_STORAGE_PATH/XXX/pid-name-examid*
 
 **Note:** During the downloading the output directory will be named, e.g.: 
 *ORTHANC_AUTOMATION_STORAGE_PATH/XXX/pid-name-examid.WORKING*
@@ -60,12 +60,12 @@ Of course *pid*, *name* and *examid* are replaced with study specific values.
 
 ### automation.json file
 
-**NOTE** Any *.json files with *master* or *template* in their name will be ignoree by the automation script. 
+**NOTE** Any *.json files with *master* or *template* in their name will be ignored by the automation script. 
 
-- The automation_template.json will be ignored by the atomation.py script. 
+- The automation_template.json will be ignored by the automation.py script. 
 - Copy the automation_template.json to build your own automation rule.
 - **Name** your new automation.json to something sensible and unique in the "automation_scripts" directory.
-- Studies that pass your automation.json rule will be downloaded to a directroy named the same as your automation.json script under *AUTOMATION_DATA_STORAGE*
+- Studies that pass your automation.json rule will be downloaded to a directory named the same as your automation.json script under *AUTOMATION_DATA_STORAGE*
 
 ## automation control
 
@@ -105,6 +105,6 @@ A study_stable or series_stable task may do any/all of the  following steps:
 - Anonymise  dicoms
 - ZIP data. 
 
-*NOTE* : package [miresearch](https://github.com/fraser29/miresearch) is designed to work in combination with autorthanc by watching download directorys for completed data sets to then perform extra post processing steps, e.g. to initiate processing pipelines. 
+*NOTE* : package [miresearch](https://github.com/fraser29/miresearch) is designed to work in combination with autorthanc by watching download directories for completed data sets to then perform extra post processing steps, e.g. to initiate processing pipelines. 
 
 

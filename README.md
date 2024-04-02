@@ -3,7 +3,7 @@
 A docker container based off **NGINX + Orthanc + Postgres** including python based automation for downloading studies based on prescribed rules. 
 
 > [!IMPORTANT]  
-> This package is currently undergoing frequent development and testing. PLease check back reguarly for version updates.
+> This package is currently undergoing frequent development and testing. PLease check back regularly for version updates.
 
 ## Base Docker
 
