@@ -58,4 +58,4 @@ More indepth [tutorials]
 
 [QuickStart]: {% link pages/quickstart.md %}
 [usage]: {% link pages/usage.md %}
-[tutorials]: {% link pages/tutorials.md %}
+[tutorials]: {% link pages/tutorial.md %}
