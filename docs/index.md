@@ -25,7 +25,7 @@ The "autorthanc" project integrates Orthanc, a lightweight DICOM server, with ad
     
 ## Quick Start
 
-See instructions here: [Quick Start](/autorthanc/quickstart/)
+See instructions here: [QuickStart]
 
 ## Components
 
@@ -45,9 +45,9 @@ The project offers the following key functionalities:
 - Automatic study management via Python scripts, utilizing JSON rules for defining actions such as downloading or forwarding DICOM studies to other nodes.
   
 
-See full usage information [here](/autorthanc/usage/)
+See full [usage]
 
-More indepth tutorials are found [here](/autorthanc/tutorial/)
+More indepth [tutorials]
 
 ----
 
@@ -55,3 +55,7 @@ More indepth tutorials are found [here](/autorthanc/tutorial/)
 
 - Web based json editing and addition
 - Json controlled study deletion after action
+
+[QuickStart]: {% link pages/quickstart.md %}
+[usage]: {% link pages/usage.md %}
+[tutorials]: {% link pages/tutorials.md %}
