@@ -14,6 +14,7 @@ import pydicom
 import io
 import shutil
 import logging
+import time
 
 # ============ CONFIG ==============================================================================
 auto_scripts_dir="/automation_scripts" # This is directory in docker file system - do not change
@@ -172,6 +173,7 @@ def getDownloadDirStudy(studyID, rootDir):
 
 def changeOwnership(directory, userName, groupName):
     os.system(f"chown -R {userName}:{groupName} {directory}")
+    time.sleep(5.0)
 
 def writeOutStudyToDirectory(studyID, rootDir, FORCE=False):
     if not os.path.isdir(rootDir):
@@ -197,6 +199,10 @@ def writeOutStudyToDirectory(studyID, rootDir, FORCE=False):
         dicom.save_as(instanceSaveFile, write_like_original=True)
         #
     logger.info(f"Finished writting {getStudyDescriptor(studyID)}")
+    if os.path.isdir(queuedDIR):
+        logger.info(f"{queuedDIR} exists - deleting. ")
+        shutil.rmtree(queuedDIR)
+        time.sleep(5.0)
     moveDirSrc_toDest(downloadDIR, queuedDIR)
     # os.rename(downloadDIR, queuedDIR)
     logger.info(f"Moved {downloadDIR} to {queuedDIR}")
