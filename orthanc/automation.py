@@ -53,8 +53,11 @@ def parseJsonToDictionary(fileName):
         myDict = json.load(fid)
     return myDict
 
-def getAllAutomationDictionary():
+def getAllAutomationDictionary(checkOn):
     """Return dictionaries parsed from json files found in 'auto_scripts_dir'
+
+    Args:
+        checkOn (str): type of stable action to check on (Study / Series)
     
     Return: list of dicts: dict is parsed from json - see automation_template.json
     """
@@ -64,6 +67,8 @@ def getAllAutomationDictionary():
     for iFile in autoscripts:
         try:
             iDict = parseJsonToDictionary(iFile)
+            if iDict.get("CheckOn", "") != checkOn:
+                continue
             if iDict.get("IsActive", False):
                 iDict['ID'] = os.path.splitext(os.path.split(iFile)[1])[0]
                 autoDicts.append(iDict)
@@ -103,14 +108,19 @@ def doesStudyMatchAutoDict(studyID, autoDict):
     return all(allTF)
 
 
-def checkAutomationScriptsForStudy(studyID):
+def checkAutomationScriptsForSeries(studyID):
+    pass # TODO
+    # return _checkAutomationScripts(studyID=studyID, checkOn='Series')
+
+def checkAutomationScriptsForStudy(studyID, checkOn):
     """Will retrun all json that match this study
     Args:
         studyID (str): study ID
+        checkOn (str): type of stable action to check on
     Returns:
         list: list of dictionaries with JSON information
     """
-    allAutoScripts = getAllAutomationDictionary()
+    allAutoScripts = getAllAutomationDictionary(checkOn)
     resDicts = []
     for iAuto in allAutoScripts:
         if doesStudyMatchAutoDict(studyID, iAuto):
@@ -175,6 +185,9 @@ def changeOwnership(directory, userName, groupName):
     os.system(f"chown -R {userName}:{groupName} {directory}")
     time.sleep(5.0)
 
+def writeOutSeriesToDirectory(seriesID, rootDir, FORCE=False):
+    pass # TODO
+
 def writeOutStudyToDirectory(studyID, rootDir, FORCE=False):
     if not os.path.isdir(rootDir):
         os.makedirs(rootDir, exist_ok=True)
@@ -217,6 +230,9 @@ def instanceToPyDicom(instanceID):
     dicom = pydicom.dcmread(io.BytesIO(f))
     return dicom
 
+def sendSeriesToOtherModality(seriesID, remoteModality):
+    pass # TODO
+
 def sendStudyToOtherModality(studyID, remoteModality):
     originatorAET = os.getenv("ORTHANC__DICOM_AET")
     logger.info(f"Moving {getStudyDescriptor(studyID)} from {originatorAET} to {remoteModality}")
@@ -238,6 +254,18 @@ def AutoPipelineOnStableStudy(studyID, FORCE=False):
             logger.warning(f"Unknow study action described by {iResDict['ID']} : {iResDict.get('Action', 'NONE')}")
     return 0 
             
+def AutoPipelineOnStableSeries(seriesID, FORCE=False):
+    resDicts = checkAutomationScriptsForSeries(seriesID)
+    for iResDict in resDicts:
+        if iResDict.get("Action", "NONE") == DOWNLOAD:
+            writeOutSeriesToDirectory(seriesID, rootDir=os.path.join(DOWNLOAD_DIR, iResDict['ID']), FORCE=FORCE)
+        elif iResDict.get("Action", "NONE") == FORWARD:
+            if DestinationModality in iResDict.keys():
+                sendSeriesToOtherModality(seriesID, iResDict[DestinationModality])
+        else:
+            logger.warning(f"Unknow study action described by {iResDict['ID']} : {iResDict.get('Action', 'NONE')}")
+    return 0 
+            
 # ================================================================================================================
 
 def OnChange(changeType, level, resource):
@@ -254,6 +282,13 @@ def OnChange(changeType, level, resource):
             # Force true so that if paused and then restarted then will overwrite
         except Exception as e: # Catch all general exceptions and debug
             logger.exception(f"In STABLE_STUDY for studyID: {resource}")
+    
+    elif changeType == orthanc.ChangeType.STABLE_SERIES:
+        try: 
+            AutoPipelineOnStableSeries(resource, FORCE=True)
+            # Force true so that if paused and then restarted then will overwrite
+        except Exception as e: # Catch all general exceptions and debug
+            logger.exception(f"In STABLE_SERIES for studyID: {resource}")
 
 
 def ForceAutoPipelineOnStableStudy(output, uri, **request):
