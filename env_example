@@ -27,6 +27,8 @@ ORTHANC_AET_PORT=4006
 # ORTHANC - AET - REMOTE MODALITIES
 #
 ## Note this needs to be a single line:
+## Note this needs to be a single line, use double quotes, empty dict if not used:
+# ORTHANC_DICOM_MODALITIES={}
 ORTHANC_DICOM_MODALITIES={"MODALITY_NAME": ["REMOTEAETNAME", "REMOTE-IP", 4242]}
 
 #

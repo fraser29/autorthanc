@@ -14,12 +14,12 @@ Docker based infrastructure for Orthanc (with postgres).
 - Copy env_example to .env
 - Edit .env, customise the variables for your specific setup:
 - Make the "Automation" directories (otherwise docker will make for you and they will be owned by root)
-- Add *.json files to your ORTHANC_AUTOMATION_JSON_SCRIPTS_PATH 
 - Start the container: 
 ```bash
 docker compose up --build -d
 ```
 - View the running ORTHANC instance at [localhost/orthanc](http://localhost/orthanc)
+- Add *.json files to your ORTHANC_AUTOMATION_JSON_SCRIPTS_PATH 
 - Add some dicoms to your ORTHANC instance and watch the automation take place
 
 ----- 

@@ -26,15 +26,20 @@ logfile = os.path.join(auto_scripts_dir, 'orthanc_automation.log')
 DOWNLOAD = "DOWNLOAD"
 FORWARD = "FORWARD"
 DestinationModality = "DestinationModality"
+DEBUG=True
 
 # ============ LOGGING =============================================================================
 logger = logging.getLogger(f"autorthanc")
-logger.setLevel(logging.INFO)
+if DEBUG:
+    logger.setLevel(logging.DEBUG)
+else:
+    logger.setLevel(logging.INFO)
 fh = logging.FileHandler(logfile, encoding='utf-8')
 fh.setFormatter(logging.Formatter('%(asctime)s | %(levelname)-7s | %(name)s | %(message)s', 
                                   datefmt='%d-%b-%y %H:%M:%S'))
 logger.addHandler(fh)
 logger.info('===== START AUTORTHANC ===== ')
+logger.debug(' :: RUNNING IN DEBUG MODE  ')
 
 
 # -------------------------------------------------------------------------------------------------
@@ -78,10 +83,30 @@ def getAllAutomationDictionary(checkOn):
             logger.error(f"Error reading {iFile}")
     return autoDicts
 
+def _doesMatchAutoDict(ID, autoDict, checkOn):
+    if checkOn == "Study":
+        return doesStudyMatchAutoDict(ID, autoDict)
+    elif checkOn == "Series":
+        return doesSeriesMatchAutoDict(ID, autoDict)
+    return False
+
+def doesSeriesMatchAutoDict(seriesID, autoDict):
+    metaSeries = json.loads(orthanc.RestApiGet(f'/series/{seriesID}'))
+    studyID = metaSeries["ParentStudy"]
+    metaStudy = json.loads(orthanc.RestApiGet(f'/studies/{studyID}'))
+    return _doesAutoDictMatchWithQuery(autoDict, 
+                                       metaStudy=metaStudy,
+                                       metaSeriesList=[metaSeries])
+
 def doesStudyMatchAutoDict(studyID, autoDict):
-    metaPatient = json.loads(orthanc.RestApiGet(f'/studies/{studyID}'))
     metaStudy = json.loads(orthanc.RestApiGet(f'/studies/{studyID}'))
     metaSeriesList = [json.loads(orthanc.RestApiGet(f'/series/{iSeries}')) for iSeries in metaStudy['Series']]
+    return _doesAutoDictMatchWithQuery(autoDict, 
+                                       metaStudy=metaStudy,
+                                       metaSeriesList=metaSeriesList)
+
+def _doesAutoDictMatchWithQuery(autoDict, metaStudy, metaSeriesList):
+    metaPatient = json.loads(orthanc.RestApiGet(f'/patients/{metaStudy["ParentPatient"]}'))
     allTF = []
     for iTag in autoDict['Tags']:
         if iTag['Level'].lower() == 'patient':
@@ -107,25 +132,22 @@ def doesStudyMatchAutoDict(studyID, autoDict):
             allTF.append(any(subTF))
     return all(allTF)
 
-
-def checkAutomationScriptsForSeries(studyID):
-    pass # TODO
-    # return _checkAutomationScripts(studyID=studyID, checkOn='Series')
-
-def checkAutomationScriptsForStudy(studyID, checkOn):
-    """Will retrun all json that match this study
+def checkAutomationScripts(study_or_series_ID, checkOn):
+    """Will retrun all json that match this study or series
     Args:
-        studyID (str): study ID
-        checkOn (str): type of stable action to check on
+        study_or_series_ID (str): study_or_series_ID
+        checkOn (str): type of stable action to check on: "Study" OR "Series"
     Returns:
         list: list of dictionaries with JSON information
     """
     allAutoScripts = getAllAutomationDictionary(checkOn)
+    logger.debug(f"Found {len(allAutoScripts)} potential scripts for action in stable {checkOn} for resource: {study_or_series_ID}")
     resDicts = []
     for iAuto in allAutoScripts:
-        if doesStudyMatchAutoDict(studyID, iAuto):
-            logger.info(f"Processing {studyID} for JSON: {iAuto['ID']}")
+        if _doesMatchAutoDict(study_or_series_ID, iAuto, checkOn):
+            logger.info(f"Processing {study_or_series_ID} for JSON: {iAuto['ID']}")
             resDicts.append(iAuto)
+    logger.debug(f"Found {len(resDicts)} scripts matching for action in stable {checkOn} for resource: {study_or_series_ID}")
     return resDicts
 
 def moveDirSrc_toDest(dirSrc, dirDest):
@@ -169,39 +191,71 @@ def getInstanceSaveFile(instanceID, rootDir):
 
 
 def getStudyDescriptor(studyID):
-    """Retrun pid-name-examid"""
-    metaPat = json.loads(orthanc.RestApiGet(f'/studies/{studyID}'))
-    name = metaPat["PatientMainDicomTags"].get("PatientName", "UNKNOWN^").split('^')[0]
-    examid = metaPat["MainDicomTags"].get("StudyID", "UNKNOWN")
-    return f'{metaPat["PatientMainDicomTags"]["PatientID"]}-{name}-{examid}'
+    """Return pid-name-examid"""
+    metaStudy = json.loads(orthanc.RestApiGet(f'/studies/{studyID}'))
+    name = metaStudy["PatientMainDicomTags"].get("PatientName", "UNKNOWN^").split('^')[0]
+    examid = metaStudy["MainDicomTags"].get("StudyID", "UNKNOWN")
+    return f'{metaStudy["PatientMainDicomTags"]["PatientID"]}-{name}-EX{examid}'
+
+
+def getSeriesDescriptor(seriesID):
+    """Return pid-name-examid-seriesNum"""
+    metaSeries = json.loads(orthanc.RestApiGet(f'/series/{seriesID}'))
+    studyID = metaSeries["ParentStudy"]
+    metaStudy = json.loads(orthanc.RestApiGet(f'/studies/{studyID}'))
+    name = metaStudy["PatientMainDicomTags"].get("PatientName", "UNKNOWN^").split('^')[0]
+    patID = metaStudy["PatientMainDicomTags"].get("PatientID", "NoPID")
+    examid = metaStudy["MainDicomTags"].get("StudyID", "UNKNOWN")
+    seNum = metaSeries["MainDicomTags"].get("SeriesNumber", "XX")
+    return f'{patID}-{name}-EX{examid}-SE{seNum}'
 
 
 def getDownloadDirStudy(studyID, rootDir):
     patientDir = os.path.join(rootDir, getStudyDescriptor(studyID))
     return patientDir
 
+def getDownloadDirSeries(seriesID, rootDir):
+    patientDir = os.path.join(rootDir, getSeriesDescriptor(seriesID))
+    return patientDir
 
 def changeOwnership(directory, userName, groupName):
     os.system(f"chown -R {userName}:{groupName} {directory}")
     time.sleep(5.0)
 
 def writeOutSeriesToDirectory(seriesID, rootDir, FORCE=False):
-    pass # TODO
+    # TODO - CHECK
+    if not os.path.isdir(rootDir):
+        os.makedirs(rootDir, exist_ok=True)
+        changeOwnership(rootDir, USERID, GROUPID)
+    queuedDIR = getDownloadDirSeries(seriesID, rootDir) # Downloading
+    seriesDesc = getSeriesDescriptor(seriesID)
+    instances = getInstancesSeries(seriesID)
+    return _writeOutInstances(instances=instances, 
+                              destinationDir=queuedDIR,
+                              descriptor=seriesDesc,
+                              FORCE=FORCE)
 
 def writeOutStudyToDirectory(studyID, rootDir, FORCE=False):
     if not os.path.isdir(rootDir):
         os.makedirs(rootDir, exist_ok=True)
         changeOwnership(rootDir, USERID, GROUPID)
     queuedDIR = getDownloadDirStudy(studyID, rootDir) # Downloading
-    downloadDIR = queuedDIR+'.WORKING'
-    if os.path.isdir(queuedDIR):
-        if FORCE:
-            logger.warning(f"{queuedDIR} exists - appending / overwriting {getStudyDescriptor(studyID)}")
-        else:
-            logger.warning(f"{getStudyDescriptor(studyID)} already exists - not written out")
-            return queuedDIR
-    logger.info(f"Begin writing out study {getStudyDescriptor(studyID)}")
+    studyDesc = getStudyDescriptor(studyID)
     instances = getInstancesStudy(studyID)
+    return _writeOutInstances(instances=instances, 
+                              destinationDir=queuedDIR,
+                              descriptor=studyDesc,
+                              FORCE=FORCE)
+
+def _writeOutInstances(instances, destinationDir, descriptor, FORCE=False):
+    if os.path.isdir(destinationDir):
+        if FORCE:
+            logger.warning(f"{destinationDir} exists - appending / overwriting {descriptor}")
+        else:
+            logger.warning(f"{descriptor} already exists - not written out")
+            return destinationDir
+    downloadDIR = destinationDir+'.WORKING'
+    logger.info(f"Begin writing out study {descriptor}")
     if not os.path.isdir(downloadDIR):
         os.makedirs(downloadDIR, exist_ok=True)
         changeOwnership(downloadDIR, USERID, GROUPID)
@@ -211,18 +265,18 @@ def writeOutStudyToDirectory(studyID, rootDir, FORCE=False):
         dicom = instanceToPyDicom(instanceId['ID'])
         dicom.save_as(instanceSaveFile, write_like_original=True)
         #
-    logger.info(f"Finished writting {getStudyDescriptor(studyID)}")
-    if os.path.isdir(queuedDIR):
-        logger.info(f"{queuedDIR} exists - deleting. ")
-        shutil.rmtree(queuedDIR)
+    logger.info(f"Finished writting {descriptor}")
+    if os.path.isdir(destinationDir):
+        logger.info(f"{destinationDir} exists - deleting. ")
+        shutil.rmtree(destinationDir)
         time.sleep(5.0)
-    moveDirSrc_toDest(downloadDIR, queuedDIR)
+    moveDirSrc_toDest(downloadDIR, destinationDir)
     # os.rename(downloadDIR, queuedDIR)
-    logger.info(f"Moved {downloadDIR} to {queuedDIR}")
-    changeOwnership(queuedDIR, USERID, GROUPID)
-    logger.info(f"Set ownership of {queuedDIR} to {USERID}:{GROUPID}")
-    logger.info(f"DONE: WRITTEN: {queuedDIR}")
-    return queuedDIR
+    logger.info(f"Moved {downloadDIR} to {destinationDir}")
+    changeOwnership(destinationDir, USERID, GROUPID)
+    logger.info(f"Set ownership of {destinationDir} to {USERID}:{GROUPID}")
+    logger.info(f"DONE: WRITTEN: {destinationDir}")
+    return destinationDir
 
 def instanceToPyDicom(instanceID):
     f = orthanc.GetDicomForInstance(instanceID)
@@ -231,19 +285,28 @@ def instanceToPyDicom(instanceID):
     return dicom
 
 def sendSeriesToOtherModality(seriesID, remoteModality):
-    pass # TODO
+    originatorAET = os.getenv("ORTHANC__DICOM_AET")
+    seDesc = getSeriesDescriptor(seriesID)
+    logger.info(f"Moving {seDesc} from {originatorAET} to {remoteModality}")
+    # TODO - CONFIRM
+    orthanc.RestApiPost(f'/modalities/{remoteModality}/store', 
+                        '{"Asynchronous": false,"Compress": true,"Permissive": true,"Priority": 0,"Resources": ["' + \
+                            seriesID + '"],"Synchronous": false, "MoveOriginatorAet": "' + \
+                                originatorAET + '", "MoveOriginatorID": ' + str(0) + ', "Permissive": true, "StorageCommitment": true}')
+    logger.info(f"DONE: FORWARDED {seDesc} from {originatorAET} to {remoteModality}")
 
 def sendStudyToOtherModality(studyID, remoteModality):
     originatorAET = os.getenv("ORTHANC__DICOM_AET")
-    logger.info(f"Moving {getStudyDescriptor(studyID)} from {originatorAET} to {remoteModality}")
+    studyDesc = getStudyDescriptor(studyID)
+    logger.info(f"Moving {studyDesc} from {originatorAET} to {remoteModality}")
     orthanc.RestApiPost(f'/modalities/{remoteModality}/store', 
                         '{"Asynchronous": false,"Compress": true,"Permissive": true,"Priority": 0,"Resources": ["' + \
                             studyID + '"],"Synchronous": false, "MoveOriginatorAet": "' + \
                                 originatorAET + '", "MoveOriginatorID": ' + str(0) + ', "Permissive": true, "StorageCommitment": true}')
-    logger.info(f"DONE: FORWARDED {getStudyDescriptor(studyID)} from {originatorAET} to {remoteModality}")
+    logger.info(f"DONE: FORWARDED {studyDesc} from {originatorAET} to {remoteModality}")
 
 def AutoPipelineOnStableStudy(studyID, FORCE=False):
-    resDicts = checkAutomationScriptsForStudy(studyID)
+    resDicts = checkAutomationScripts(studyID, "Study")
     for iResDict in resDicts:
         if iResDict.get("Action", "NONE") == DOWNLOAD:
             writeOutStudyToDirectory(studyID, rootDir=os.path.join(DOWNLOAD_DIR, iResDict['ID']), FORCE=FORCE)
@@ -255,7 +318,7 @@ def AutoPipelineOnStableStudy(studyID, FORCE=False):
     return 0 
             
 def AutoPipelineOnStableSeries(seriesID, FORCE=False):
-    resDicts = checkAutomationScriptsForSeries(seriesID)
+    resDicts = checkAutomationScripts(seriesID, "Series")
     for iResDict in resDicts:
         if iResDict.get("Action", "NONE") == DOWNLOAD:
             writeOutSeriesToDirectory(seriesID, rootDir=os.path.join(DOWNLOAD_DIR, iResDict['ID']), FORCE=FORCE)
@@ -277,6 +340,7 @@ def OnChange(changeType, level, resource):
 
     # everytime a new study is received, we shall check it then process
     elif changeType == orthanc.ChangeType.STABLE_STUDY:
+        logger.debug(f"Stable STUDY check begun on {resource}")
         try: 
             AutoPipelineOnStableStudy(resource, FORCE=True)
             # Force true so that if paused and then restarted then will overwrite
@@ -284,6 +348,7 @@ def OnChange(changeType, level, resource):
             logger.exception(f"In STABLE_STUDY for studyID: {resource}")
     
     elif changeType == orthanc.ChangeType.STABLE_SERIES:
+        logger.debug(f"Stable SERIES check begun on {resource}")
         try: 
             AutoPipelineOnStableSeries(resource, FORCE=True)
             # Force true so that if paused and then restarted then will overwrite
@@ -295,7 +360,7 @@ def ForceAutoPipelineOnStableStudy(output, uri, **request):
     if request['method'] == 'GET':
         # Retrieve the instance ID from the regular expression (*)
         studyID = request['groups'][0]
-        resDicts = checkAutomationScriptsForStudy(studyID)
+        resDicts = checkAutomationScripts(studyID, "Study")
         output.AnswerBuffer(f"Running AutoPipelineOnStableStudy on {studyID}\n Results:\n{resDicts}", 'text/plain')
         AutoPipelineOnStableStudy(studyID, FORCE=True)
     else:
