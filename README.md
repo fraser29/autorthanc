@@ -51,10 +51,13 @@ Of course *pid*, *name* and *examid* are replaced with study specific values.
 - Studies that pass your automation.json rule will be downloaded to a directroy named the same as your automation.json script under *AUTOMATION_DATA_STORAGE*
 
 
+### Clean up
+
+Clean up is left to the user. Please see [OrthancManager](https://github.com/fraser29/OrthancManager) for a user friendly toolkit that can interact with the Orthanc API from the commandline. 
 
 --------------------
 
-Docker images :
+## Docker images :
 - orthancteam/orthanc:20.2.0
 - postgres:12.1
 
