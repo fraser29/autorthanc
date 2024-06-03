@@ -219,6 +219,7 @@ def getDownloadDirSeries(seriesID, rootDir):
     return patientDir
 
 def changeOwnership(directory, userName, groupName):
+    time.sleep(5.0)
     os.system(f"chown -R {userName}:{groupName} {directory}")
     time.sleep(5.0)
 
@@ -226,7 +227,7 @@ def writeOutSeriesToDirectory(seriesID, rootDir, FORCE=False):
     # TODO - CHECK
     if not os.path.isdir(rootDir):
         os.makedirs(rootDir, exist_ok=True)
-        changeOwnership(rootDir, USERID, GROUPID)
+    changeOwnership(rootDir, USERID, GROUPID)
     queuedDIR = getDownloadDirSeries(seriesID, rootDir) # Downloading
     seriesDesc = getSeriesDescriptor(seriesID)
     instances = getInstancesSeries(seriesID)
@@ -238,7 +239,7 @@ def writeOutSeriesToDirectory(seriesID, rootDir, FORCE=False):
 def writeOutStudyToDirectory(studyID, rootDir, FORCE=False):
     if not os.path.isdir(rootDir):
         os.makedirs(rootDir, exist_ok=True)
-        changeOwnership(rootDir, USERID, GROUPID)
+    changeOwnership(rootDir, USERID, GROUPID)
     queuedDIR = getDownloadDirStudy(studyID, rootDir) # Downloading
     studyDesc = getStudyDescriptor(studyID)
     instances = getInstancesStudy(studyID)
@@ -258,7 +259,7 @@ def _writeOutInstances(instances, destinationDir, descriptor, FORCE=False):
     logger.info(f"Begin writing out study {descriptor}")
     if not os.path.isdir(downloadDIR):
         os.makedirs(downloadDIR, exist_ok=True)
-        changeOwnership(downloadDIR, USERID, GROUPID)
+    changeOwnership(downloadDIR, USERID, GROUPID)
     for instanceId in instances:
         instanceSaveFile = getInstanceSaveFile(instanceId['ID'], downloadDIR)
         os.makedirs(os.path.split(instanceSaveFile)[0], exist_ok=True)
