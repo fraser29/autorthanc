@@ -20,13 +20,13 @@ import time
 auto_scripts_dir="/automation_scripts" # This is directory in docker file system - do not change
 output_dir="/automation_output"
 DOWNLOAD_DIR = output_dir
-USERID = os.getenv("UID", '1000')
-GROUPID = os.getenv("GID", '1000')
+USERID = int(os.getenv("UID", '1000'))
+GROUPID = int(os.getenv("GID", '1000'))
 logfile = os.path.join(auto_scripts_dir, 'orthanc_automation.log')
 DOWNLOAD = "DOWNLOAD"
 FORWARD = "FORWARD"
 DestinationModality = "DestinationModality"
-DEBUG=True
+DEBUG=False
 
 # ============ LOGGING =============================================================================
 logger = logging.getLogger(f"autorthanc")
