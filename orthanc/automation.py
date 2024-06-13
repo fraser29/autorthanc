@@ -218,10 +218,25 @@ def getDownloadDirSeries(seriesID, rootDir):
     patientDir = os.path.join(rootDir, getSeriesDescriptor(seriesID))
     return patientDir
 
-def changeOwnership(directory, userName, groupName):
-    time.sleep(5.0)
-    os.system(f"chown -R {userName}:{groupName} {directory}")
-    time.sleep(5.0)
+def changeOwnership(directory, uid, gid):
+    try:
+        logger.debug(f"Change ownership of {directory} to {uid}:{gid}")
+        for root, dirs, files in os.walk(directory):
+            for name in dirs:
+                dir_path = os.path.join(root, name)
+                os.chown(dir_path, uid, gid)
+            for name in files:
+                file_path = os.path.join(root, name)
+                os.chown(file_path, uid, gid)
+        os.chown(directory, uid, gid)
+        logger.debug(f"Finished change of ownership of {directory} to {uid}:{gid}")
+    except Exception as e: # Catch all general exceptions and debug
+        logger.exception(f"During change of ownership for {directory}")
+
+# def changeOwnership(directory, userName, groupName):
+#     time.sleep(5.0)
+#     os.system(f"chown -R {userName}:{groupName} {directory}")
+#     time.sleep(5.0)
 
 def writeOutSeriesToDirectory(seriesID, rootDir, FORCE=False):
     # TODO - CHECK
@@ -306,7 +321,7 @@ def sendStudyToOtherModality(studyID, remoteModality):
                                 originatorAET + '", "MoveOriginatorID": ' + str(0) + ', "Permissive": true, "StorageCommitment": true}')
     logger.info(f"DONE: FORWARDED {studyDesc} from {originatorAET} to {remoteModality}")
 
-def AutoPipelineOnStableStudy(studyID, FORCE=False):
+def AutoPipelineOnStableStudy(studyID, FORCE):
     resDicts = checkAutomationScripts(studyID, "Study")
     for iResDict in resDicts:
         if iResDict.get("Action", "NONE") == DOWNLOAD:
@@ -316,9 +331,15 @@ def AutoPipelineOnStableStudy(studyID, FORCE=False):
                 sendStudyToOtherModality(studyID, iResDict[DestinationModality])
         else:
             logger.warning(f"Unknow study action described by {iResDict['ID']} : {iResDict.get('Action', 'NONE')}")
+    for iSeries in getSeriesStudy(studyID):
+        try:
+            AutoPipelineOnStableSeries(iSeries, FORCE=True)
+        except Exception as e: # Catch all general exceptions and debug
+            logger.exception(f"In STABLE_STUDY processing SERIES for studyID: {iSeries}")
+            return 2
     return 0 
             
-def AutoPipelineOnStableSeries(seriesID, FORCE=False):
+def AutoPipelineOnStableSeries(seriesID, FORCE):
     resDicts = checkAutomationScripts(seriesID, "Series")
     for iResDict in resDicts:
         if iResDict.get("Action", "NONE") == DOWNLOAD:
@@ -349,12 +370,13 @@ def OnChange(changeType, level, resource):
             logger.exception(f"In STABLE_STUDY for studyID: {resource}")
     
     elif changeType == orthanc.ChangeType.STABLE_SERIES:
-        logger.debug(f"Stable SERIES check begun on {resource}")
-        try: 
-            AutoPipelineOnStableSeries(resource, FORCE=True)
-            # Force true so that if paused and then restarted then will overwrite
-        except Exception as e: # Catch all general exceptions and debug
-            logger.exception(f"In STABLE_SERIES for studyID: {resource}")
+        pass # TO REDUCE ACTIONS SHIFT THIS TO STABLE STUDY 
+        # logger.debug(f"Stable SERIES check begun on {resource}")
+        # try: 
+        #     AutoPipelineOnStableSeries(resource, FORCE=True)
+        #     # Force true so that if paused and then restarted then will overwrite
+        # except Exception as e: # Catch all general exceptions and debug
+        #     logger.exception(f"In STABLE_SERIES for studyID: {resource}")
 
 
 def ForceAutoPipelineOnStableStudy(output, uri, **request):
