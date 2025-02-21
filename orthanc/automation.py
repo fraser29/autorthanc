@@ -331,12 +331,6 @@ def AutoPipelineOnStableStudy(studyID, FORCE):
                 sendStudyToOtherModality(studyID, iResDict[DestinationModality])
         else:
             logger.warning(f"Unknow study action described by {iResDict['ID']} : {iResDict.get('Action', 'NONE')}")
-    for iSeries in getSeriesStudy(studyID):
-        try:
-            AutoPipelineOnStableSeries(iSeries, FORCE=True)
-        except Exception as e: # Catch all general exceptions and debug
-            logger.exception(f"In STABLE_STUDY processing SERIES for studyID: {iSeries}")
-            return 2
     return 0 
             
 def AutoPipelineOnStableSeries(seriesID, FORCE):
@@ -370,13 +364,12 @@ def OnChange(changeType, level, resource):
             logger.exception(f"In STABLE_STUDY for studyID: {resource}")
     
     elif changeType == orthanc.ChangeType.STABLE_SERIES:
-        pass # TO REDUCE ACTIONS SHIFT THIS TO STABLE STUDY 
-        # logger.debug(f"Stable SERIES check begun on {resource}")
-        # try: 
-        #     AutoPipelineOnStableSeries(resource, FORCE=True)
-        #     # Force true so that if paused and then restarted then will overwrite
-        # except Exception as e: # Catch all general exceptions and debug
-        #     logger.exception(f"In STABLE_SERIES for studyID: {resource}")
+        logger.debug(f"Stable SERIES check begun on {resource}")
+        try: 
+            AutoPipelineOnStableSeries(resource, FORCE=True)
+            # Force true so that if paused and then restarted then will overwrite
+        except Exception as e: # Catch all general exceptions and debug
+            logger.exception(f"In STABLE_SERIES for studyID: {resource}")
 
 
 def ForceAutoPipelineOnStableStudy(output, uri, **request):

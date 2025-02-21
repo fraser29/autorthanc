@@ -1,14 +1,24 @@
 {
     "CheckOn": "Series",
-    "IsActive": true,
+    "IsActive": false,
     "Action": "FORWARD",
     "DestinationModality": "PACS",
-    "Comment": "FWD results pdf to PACS",
+    "Comment": "FWD processed data to PACS",
     "Tags": [
         {
             "TagName": "SeriesNumber",
             "Level": "Series",
             "Value": "999"
+        }, 
+        {
+            "TagName": "SeriesDescription",
+            "Level": "Series",
+            "Value": "processed"
+        },
+        {
+            "TagName": "SeriesDescription",
+            "Level": "Series",
+            "Value": "results"
         }
     ]
 }

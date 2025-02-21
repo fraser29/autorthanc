@@ -29,11 +29,11 @@ services:
       # Storage volume for raw dicoms
       - ${ORTAHNC_DB_STORAGE_PATH}:/var/lib/orthanc/db
       # Storage for Automation
-      - ${ORTHANC_AUTOMATION_JSON_SCRIPTS_PATH}:/automation_scripts
-      - ${ORTHANC_AUTOMATION_STORAGE_PATH}:/automation_output
+      - ${ORTHANC_AUTOMATION_JSON_SCRIPTS_PATH}:/automation_scripts:rw
+      - ${ORTHANC_AUTOMATION_STORAGE_PATH}:/automation_output:rw
     environment:
       ## Environment variables for customisation:
-      ORTHANC__NAME: "autorthanc"
+      ORTHANC__NAME: ${ORTHANC_DISPLAY_NAME}
       ORTHANC__DICOM_AET: ${ORTHANC_AET_NAME}
       ORTHANC__DICOM_PORT: ${ORTHANC_AET_PORT} 
       ORTHANC__REGISTERED_USERS: |
@@ -41,6 +41,13 @@ services:
       ORTHANC__STABLE_AGE: ${ORTHANC_STABLE_AGE}
       ORTHANC__DICOM_MODALITIES: ${ORTHANC_DICOM_MODALITIES}
       
+      ORTHANC__AUTHENTICATION_ENABLED: ${ORTHANC_AUTHENTICATION_ENABLED}
+      ORTHANC__DICOM_SCP_TIMEOUT: 120
+      ORTHANC__DICOM_SCU_TIMEOUT: 120
+      ORTHANC__CONCURRENT_JOBS: 32
+      ORTHANC__MAXIMUM_STORAGE_CACHE_SIZE: 4096
+      ORTHANC__HTTP_REQUEST_TIMEOUT: 120 
+
       ##
       PYTHON_PLUGIN_ENABLED: "true"
       ORTHANC__PYTHON_SCRIPT: "/scripts/automation.py"
@@ -76,7 +83,7 @@ services:
   index-db:
     image: postgres
     restart: always
-    ports: ["5432:5432"]
+    ports: ["${POSGRES_DOCKER_EXPOSE_PORT}:5432"]
     volumes: ["orthanc-index:/var/lib/postgresql/data"]
     environment:
       POSTGRES_PASSWORD: "postgres"

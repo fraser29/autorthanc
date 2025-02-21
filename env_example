@@ -15,21 +15,20 @@ ORTHANC_WEB_PORT=80
 # ORTHANC - storage
 #
 ORTAHNC_DB_STORAGE_PATH=/path/to/local/directory/for/dicom/storage
-ORTHANC_STABLE_AGE=300
+ORTHANC_STABLE_AGE=60
 
 #
 # ORTHANC - AET
 #
 ORTHANC_AET_NAME=AUTORTHANCAET
-ORTHANC_AET_PORT=4006
+ORTHANC_AET_PORT=104
 
 #
 # ORTHANC - AET - REMOTE MODALITIES
 #
-## Note this needs to be a single line:
 ## Note this needs to be a single line, use double quotes, empty dict if not used:
-# ORTHANC_DICOM_MODALITIES={}
-ORTHANC_DICOM_MODALITIES={"MODALITY_NAME": ["REMOTEAETNAME", "REMOTE-IP", 4242]}
+ORTHANC_DICOM_MODALITIES={}
+# ORTHANC_DICOM_MODALITIES={"MODALITY_NAME": ["REMOTEAETNAME", "REMOTE-IP", 4242]}
 
 #
 # ORTHANC - automation paths
@@ -38,3 +37,13 @@ ORTHANC_DICOM_MODALITIES={"MODALITY_NAME": ["REMOTEAETNAME", "REMOTE-IP", 4242]}
 ## on the local system
 ORTHANC_AUTOMATION_JSON_SCRIPTS_PATH=/path/to/local/directory/for/json/scripts
 ORTHANC_AUTOMATION_STORAGE_PATH=/path/to/local/storage/for/download/data
+
+
+# EXTRA SITE-SPECIFIC ORTHANC OPTIONS:
+# Display name in browser - helpful if running multiple instances
+ORTHANC_DISPLAY_NAME=autorthanc
+ORTHANC_AUTHENTICATION_ENABLED=true
+
+##
+# Change this if port already in use
+POSGRES_DOCKER_EXPOSE_PORT=5432
