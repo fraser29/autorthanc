@@ -22,3 +22,15 @@ WORKDIR /scripts
 
 # Copy the current directory contents into the container at /scripts
 COPY . /scripts
+
+
+ARG UIG
+ARG GID
+
+RUN mkdir /automation_output
+RUN chown -R $UID /automation_output
+VOLUME /automation_output
+RUN mkdir /automation_scripts
+RUN chown -R $UID /automation_scripts
+VOLUME /automation_scripts
+USER $UID

@@ -6,8 +6,10 @@ title: Tutorial
 
 ### Example:
 
-You copy env_example to .env and set *ORTHANC_AUTOMATION_STORAGE_PATH* to */home/username/data*
+If you copy env_example to .env and set *ORTHANC_AUTOMATION_STORAGE_PATH* to */home/username/data*
+
 If you save in *ORTHANC_AUTOMATION_JSON_SCRIPTS_PATH* an automation json named: brain_study_X.json. 
+
 When that automation script identifies a new study arriving in the dicom server, say based on the following rules:
 - StudyDescription tag contains "brain"
 - (for any series in study) SeriesDescription tag contains "axial t1"

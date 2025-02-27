@@ -1,7 +1,7 @@
 {
     "CheckOn": "Study",
     "IsActive": false,
-    "Comment": "CHANGEME: enter something sensible and your initials (don't forget to adjust IsActive value",
+    "Comment": "CHANGEME: enter something sensible and your initials (don't forget to adjust IsActive value)",
     "Action" : "DOWNLOAD or FORWARD",
     "DestinationModality": "Name of destination for FORWARD",
     "Tags": [

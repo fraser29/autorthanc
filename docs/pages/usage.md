@@ -15,15 +15,16 @@ Detailed description of the variables set in .env and their defaults follow:
 
 ```.env
 # The user and group ID to set for all data once written out. 
-## The container runs with user root and thus to avoid permission error with data written to the host volume the following IDs are used to set permissions upon completion of writting.
+## The container runs with user root and thus to avoid permission error with data written to the host volume the following IDs are used to set permissions upon completion of writing.
 UID=1000
 GID=1000
 
 # The port on which to expose the ORTHANC web interface:
 ORTHANC_WEB_PORT=80
 
-# The path on the HOST machine where the storage of dicom files will be:
+# The path on the HOST machine where the storage of dicom files will be (choose fast SSD for optimal performance):
 ORTAHNC_DB_STORAGE_PATH=/path/to/local/directory/for/dicom/storage
+
 # The time (in seconds) after which if no changes have been made, then autorthanc will declare a study stable: 
 ORTHANC_STABLE_AGE=300
 
@@ -35,10 +36,24 @@ ORTHANC_AET_PORT=4006
 ## Note this needs to be a single line:
 ORTHANC_DICOM_MODALITIES={"MODALITY_NAME": ["REMOTEAETNAME", "REMOTE-IP", 4242]}
 
-# The paths on the HOST machine where JSON automation scripts should reside (these may be added to and modified while autorthanc is running). And where downloaded data will be saved - data identified by XYZ.json will be saved under a directory at ORTHANC_AUTOMATION_STORAGE_PATH/XYZ 
-## These directroies should exist with desired (user) ownership on the local system
+# The path on the HOST machine where JSON automation scripts should reside (these may be added to and modified while autorthanc is running). 
 ORTHANC_AUTOMATION_JSON_SCRIPTS_PATH=/path/to/local/directory/for/json/scripts
+
+# Path where downloaded data will be saved - data identified by XYZ.json will be saved under a directory at ORTHANC_AUTOMATION_STORAGE_PATH/XYZ 
 ORTHANC_AUTOMATION_STORAGE_PATH=/path/to/local/storage/for/download/data
+
+## These directories should exist with desired (user) ownership on the local system
+
+# EXTRA SITE-SPECIFIC ORTHANC OPTIONS:
+# Display name in browser - helpful if running multiple instances
+ORTHANC_DISPLAY_NAME=autorthanc
+ORTHANC_AUTHENTICATION_ENABLED=true
+
+##
+# Change this if port already in use
+POSGRES_DOCKER_EXPOSE_PORT=5432
+
+
 
 ```
   
@@ -105,6 +120,6 @@ A study_stable or series_stable task may do any/all of the  following steps:
 - Anonymise  dicoms
 - ZIP data. 
 
-*NOTE* : package [miresearch](https://github.com/fraser29/miresearch) is designed to work in combination with autorthanc by watching download directories for completed data sets to then perform extra post processing steps, e.g. to initiate processing pipelines. 
+*NOTE* : package [hurahura](https://github.com/fraser29/hurahura) is designed to work in combination with autorthanc by watching download directories for completed data sets to then perform extra post processing steps, e.g. to initiate processing pipelines. 
 
 

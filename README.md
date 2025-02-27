@@ -2,9 +2,6 @@
 
 A docker container based off **NGINX + Orthanc + Postgres** including python based automation for downloading studies based on prescribed rules. 
 
-> [!IMPORTANT]  
-> This package is currently undergoing frequent development and testing. Please check back regularly for version updates.
-
 ## Base Docker
 
 Docker based infrastructure for Orthanc (with postgres). 
@@ -27,9 +24,9 @@ docker compose up --build -d
 
 ## AUTOMATION
 
-The automation portion of this docker will inspect every new study passed to the Orthanc instance, once that study has become "stable". 
+The automation portion of this docker will inspect every new series and study passed to the Orthanc instance, once that sereis/study has become "stable". 
 
-Stable is defined as no new images appeared for a period of X seconds (X is defined using variable ORTHANC_STABLE_AGE in the .env file - defaults to 300 seconds). 
+Stable is defined as no new images appeared for a period of X seconds (X is defined using variable ORTHANC_STABLE_AGE in the .env file - defaults to 60 seconds). 
 
 If that study meets criterior defined by an XXX.json under ORTHANC_AUTOMATION_JSON_SCRIPTS_PATH then that study will be downloaded to a patient specific directory under: *ORTHANC_AUTOMATION_STORAGE_PATH/XXX/pid-name-examid*
 
@@ -43,9 +40,8 @@ Of course *pid*, *name* and *examid* are replaced with study specific values.
 
 ### automation.json file
 
-**NOTE** Any *.json files with *master* or *template* in their name will be ignoree by the automation script. 
+**NOTE** Any *.json files with *master* or *template* in their name will be ignored by the automation script. 
 
-- The automation_template.json will be ignored by the atomation.py script. 
 - Copy the automation_template.json to build your own automation rule.
 - **Name** your new automation.json to something sensible and unique in the "automation_scripts" directory.
 - Studies that pass your automation.json rule will be downloaded to a directroy named the same as your automation.json script under *AUTOMATION_DATA_STORAGE*
