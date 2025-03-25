@@ -54,8 +54,8 @@ Clean up is left to the user. Please see [OrthancManager](https://github.com/fra
 --------------------
 
 ## Docker images :
-- orthancteam/orthanc:20.2.0
-- postgres:12.1
+- orthanc
+- postgres:16
 
 To deploy the infrastructure, run `docker compose up` or `docker compose up -d` (background task).
 
@@ -78,3 +78,20 @@ rm -rf orthanc_db pg_data
 ```
 
 See the full documentation [here](https://fraser29.github.io/autorthanc/)
+
+# Use the OHIF viewer
+
+An override file is provided to use this Orthanc implementation with the OHIF viewer. This sets some CORS headers to allow the OHIF viewer to work.
+
+```bash
+docker compose -f docker-compose.ohif.yml up -d
+
+```
+
+Run the OHIF viewer at [localhost:3000](http://localhost:3000) via: 
+
+```bash
+APP_CONFIG=config/local_orthanc.js yarn run start
+```
+
+
