@@ -46,6 +46,13 @@ Of course *pid*, *name* and *examid* are replaced with study specific values.
 - **Name** your new automation.json to something sensible and unique in the "automation_scripts" directory.
 - Studies that pass your automation.json rule will be downloaded to a directroy named the same as your automation.json script under *AUTOMATION_DATA_STORAGE*
 
+### Post processing
+
+Often, the reason for exporting a dataset using AUTORTHANC is to carry out some post-processing. 
+
+Please see the python package [hurahura](https://fraser29.github.io/hurahura/) for this. 
+
+Alternatively, a script named "*directory_watch.sh*" is included with this repository. 
 
 ### Clean up
 
