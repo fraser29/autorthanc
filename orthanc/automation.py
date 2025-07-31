@@ -181,6 +181,7 @@ def getInstancesStudy(studyID):
         instanceIDs += getInstancesSeries(iSeries)
     return instanceIDs
 
+
 def getInstanceSaveFile(instanceID, rootDir):
     metadata = json.loads(orthanc.RestApiGet(f'/instances/{instanceID}'))
     metaSer = json.loads(orthanc.RestApiGet(f'/series/{metadata["ParentSeries"]}'))
@@ -188,6 +189,14 @@ def getInstanceSaveFile(instanceID, rootDir):
     seDate = metaSer["MainDicomTags"].get("SeriesDate", "UNKNOWN")
     seUID = metaSer["MainDicomTags"]["SeriesInstanceUID"]
     return os.path.join(rootDir, f'SE{seNum}-{seDate}-{seUID}', f'{metadata["MainDicomTags"]["SOPInstanceUID"]}.dcm')
+
+
+def getInstanceSaveFile_pydicom(pydicomObj, rootDir):
+    seNum = pydicomObj.get("SeriesNumber", "XX")
+    seDate = pydicomObj.get("SeriesDate", "UNKNOWN")
+    seUID = pydicomObj["SeriesInstanceUID"]
+    sopUID = pydicomObj["SOPInstanceUID"]
+    return os.path.join(rootDir, f'SE{seNum}-{seDate}-{seUID}', f'{sopUID}.dcm')
 
 
 def getStudyDescriptor(studyID):
@@ -233,10 +242,6 @@ def changeOwnership(directory, uid, gid):
     except Exception as e: # Catch all general exceptions and debug
         logger.exception(f"During change of ownership for {directory}")
 
-# def changeOwnership(directory, userName, groupName):
-#     time.sleep(5.0)
-#     os.system(f"chown -R {userName}:{groupName} {directory}")
-#     time.sleep(5.0)
 
 def writeOutSeriesToDirectory(seriesID, rootDir, FORCE=False):
     # TODO - CHECK
@@ -276,9 +281,10 @@ def _writeOutInstances(instances, destinationDir, descriptor, FORCE=False):
         os.makedirs(downloadDIR, exist_ok=True)
     changeOwnership(downloadDIR, USERID, GROUPID)
     for instanceId in instances:
-        instanceSaveFile = getInstanceSaveFile(instanceId['ID'], downloadDIR)
-        os.makedirs(os.path.split(instanceSaveFile)[0], exist_ok=True)
+        # instanceSaveFile = getInstanceSaveFile(instanceId['ID'], downloadDIR) # API calls - slow
         dicom = instanceToPyDicom(instanceId['ID'])
+        instanceSaveFile = getInstanceSaveFile_pydicom(dicom, downloadDIR)
+        os.makedirs(os.path.split(instanceSaveFile)[0], exist_ok=True)
         dicom.save_as(instanceSaveFile, write_like_original=True)
         #
     logger.info(f"Finished writting {descriptor}")
