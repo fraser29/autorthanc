@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Update 29.07.2025: Change rsync to cp -r - result of poor reliability with rsync to cifs
-
 # Function to print help
 print_help() {
     echo "Usage: $0 <watch_dir> <dest_dir>"
@@ -40,22 +38,12 @@ sync_subdir() {
     local subdir_name
     subdir_name=$(basename "$src")
     local dest_working="$DEST_DIR/${subdir_name}.WORKING"
-    local dest_final="$DEST_DIR/${subdir_name}"
+    local dest_final="$DEST_DIR/$subdir_name"
 
-    echo "Syncing '$subdir_name' to '$dest_working'...  "
-    echo " -- then mv '$dest_working' to '$dest_final'  " 
-    if [[ -d "$dest_final" ]]; then
-        rm -r "dest_final"
-    fi
-    #rsync -a "$src/" "$dest_working/" && \
-    cp -r "$src" "$dest_working" && mv "$dest_working" "$dest_final"
-    if [[ $? -eq 0 ]]; then
-        echo "Sync completed: $dest_final" 
-        rm -r $src
-    else
-        echo "Sync failed - moving to MIResearch-ERROR" 
-        mv $src $WATCH_DIR/MIResearch-ERROR/
-    fi
+    echo "Syncing '$subdir_name' to '$dest_working'..."
+    rsync -a "$src/" "$dest_working/" && \
+    mv "$dest_working" "$dest_final" && \
+    echo "Sync completed: $dest_final"
 }
 
 
@@ -63,16 +51,13 @@ sync_subdir() {
 #   If inotify-tools is not installed run (debian / ubuntu ) 
 # sudo apt install inotify-tools 
 echo "Watching: $WATCH_DIR"
-inotifywait -m -e create -e moved_to --format "%f" "$WATCH_DIR" | while read -r new_item; do
+inotifywait -m -e create --format "%f" "$WATCH_DIR" | while read -r new_item; do
     full_path="$WATCH_DIR/$new_item"
     lower_item=$(echo "$new_item" | tr '[:upper:]' '[:lower:]')
 
-    echo "Got new item: $new_item" 
     if [[ -d "$full_path" && "$lower_item" != *working* ]]; then
         # Small delay to ensure full creation
-        echo "Waiting ... "
-        sleep 20
-        echo "Got new directory: $full_path" 
+        sleep 2
 
         if [[ -d "$DEST_DIR" ]]; then
             sync_subdir "$full_path"
